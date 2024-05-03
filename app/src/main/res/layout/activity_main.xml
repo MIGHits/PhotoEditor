@@ -5,42 +5,27 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:rotation="0"
+    android:scaleX="1"
+    android:background="@drawable/main_screen"
+    tools:context="com.example.myapplication.MainActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.479"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/photo_pick_button"
-        style="@style/Widget.AppCompat.Button"
+        style="@style/kremlin"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#E91E63"
-        android:text="Выбрать фото из галереи"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/image_save"
-        app:layout_constraintVertical_bias="0.343"
-        app:strokeColor="#FFFFFF" />
 
-    <ImageView
-        android:id="@+id/image_save"
-        android:layout_width="233dp"
-        android:layout_height="267dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#b26c78"
+        android:elevation="25dp"
+        android:stateListAnimator="@null"
+        android:text="Галерея"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.147"
-        app:srcCompat="@android:drawable/ic_menu_gallery" />
+        app:layout_constraintVertical_bias="0.461" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
