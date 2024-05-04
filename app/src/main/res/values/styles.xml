@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="kremlin">
-        <item name="android:fontFamily">@font/kremlin_premier</item>
+    <style name="mainFont">
+        <item name="android:fontFamily">@font/main_screen_font</item>
     </style>
 </resources>

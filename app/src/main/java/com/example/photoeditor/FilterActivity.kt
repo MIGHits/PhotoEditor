@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
@@ -23,11 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.text.FieldPosition
 import kotlin.math.abs
 
@@ -35,29 +32,36 @@ class FilterActivity: AppCompatActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.filter_activity)
+
             window.setStatusBarColor(Color.parseColor("#b26c78"));
             window.setNavigationBarColor(Color.parseColor("#b26c78"));
 
+            val imageView = findViewById<ImageView>(R.id.customer_image)
+
+            val backButton = findViewById<ImageButton>(R.id.backButton)
+
+            backButton.setOnClickListener{
+                finish()
+            }
+
+
             val imageUriString = intent.getStringExtra("imageUri")
             val imageUri = Uri.parse(imageUriString)
-            val imageView = findViewById<ImageView>(R.id.customer_image)
             imageView.setImageURI(imageUri)
 
-            val drawable = imageView.drawable as BitmapDrawable
-            val bitmap = drawable.bitmap
+            var drawable = imageView.drawable as BitmapDrawable
+            var bitmap = drawable.bitmap
 
             val rotationBar = findViewById<SeekBar>(R.id.rotationBar)
             val rotationBarProgress = findViewById<TextView>(R.id.rotationDegree)
 
             rotationBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                    // Обновляем значение в TextView
                     rotationBarProgress.text = progress.toString()+"°"
-
                 }
 
                 override fun onStartTrackingTouch(rotationBar: SeekBar) {
-                    // Вызывается, когда пользователь начинает перемещать ползунок
+
                 }
 
                 override fun onStopTrackingTouch(rotationBar: SeekBar) {
@@ -79,7 +83,8 @@ class FilterActivity: AppCompatActivity() {
                 }
             })
 
-            val images = listOf(R.drawable.rotation_icon, R.drawable.scale_icon, R.drawable.negative_icon)
+            val images = listOf(R.drawable.rotation_icon, R.drawable.scale_icon,
+                R.drawable.saturation,R.drawable.bright)
             val itemClickListeners = listOf(
                 object : OnItemClickListener {
                     override fun onItemClick(position: Int) {
@@ -94,10 +99,34 @@ class FilterActivity: AppCompatActivity() {
                 },
                 object : OnItemClickListener {
                     override fun onItemClick(position: Int) {
-                        // Логика для третьего элемента
-
+                        suspend fun saturationFilter(bitmap: Bitmap){
+                            val saturatedBitmap =
+                                SaturationFilter.saturation(bitmap)
+                            imageView.setImageBitmap(saturatedBitmap)
+                        }
+                        lifecycleScope.launch {
+                            saturationFilter(bitmap)
+                        }
+                        //drawable = imageView.drawable as BitmapDrawable
+                        //bitmap = drawable.bitmap
                     }
-                }
+                },
+                object : OnItemClickListener {
+                    override fun onItemClick(position: Int) {
+                        suspend fun brightness(bitmap: Bitmap){
+                            val resultBitmap =
+                                Brightness.brightnessFilter(bitmap)
+                            imageView.setImageBitmap(resultBitmap)
+                        }
+
+                        lifecycleScope.launch {
+                            brightness(bitmap)
+                        }
+
+                        //drawable = imageView.drawable as BitmapDrawable
+                        // bitmap = drawable.bitmap
+                    }
+                },
             )
             val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
             recyclerView.addItemDecoration(SpacesItemDecoration(5))

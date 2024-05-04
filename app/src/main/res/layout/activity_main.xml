@@ -11,21 +11,66 @@
     tools:context="com.example.myapplication.MainActivity">
 
 
-    <Button
-        android:id="@+id/photo_pick_button"
-        style="@style/kremlin"
+    <TextView
+        android:id="@+id/mainScreenText"
+        style="@style/mainFont"
         android:layout_width="wrap_content"
-
         android:layout_height="wrap_content"
-        android:backgroundTint="#b26c78"
-        android:elevation="25dp"
-        android:stateListAnimator="@null"
-        android:text="Галерея"
+        android:layout_marginTop="4dp"
+
+        android:text="Сделай воспоминания ярче вместе с KIMG"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="30dp"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/galleryButton"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="269dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/gallery_icon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mainScreenText"
+        app:layout_constraintVertical_bias="0.336" />
+
+    <ImageButton
+        android:id="@+id/fileButton"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="268dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/folder"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.461" />
+        app:layout_constraintHorizontal_bias="0.251"
+        app:layout_constraintStart_toEndOf="@+id/galleryButton"
+        app:layout_constraintTop_toBottomOf="@+id/mainScreenText"
+        app:layout_constraintVertical_bias="0.335" />
+
+    <ImageButton
+        android:id="@+id/cameraButton"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="269dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/camera"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.456"
+        app:layout_constraintStart_toEndOf="@+id/fileButton"
+        app:layout_constraintTop_toBottomOf="@+id/mainScreenText"
+        app:layout_constraintVertical_bias="0.336" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
