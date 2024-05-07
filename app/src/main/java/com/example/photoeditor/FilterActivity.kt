@@ -1,15 +1,21 @@
 package com.example.photoeditor
 
 import CarouselAdapter
-import OnItemClickListener
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ContentValues
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.ImageButton
@@ -24,126 +30,334 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.*
-import java.text.FieldPosition
-import kotlin.math.abs
 
+
+data class ItemData(val image:Int, val title:String)
 class FilterActivity: AppCompatActivity() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            setContentView(R.layout.filter_activity)
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.filter_activity)
 
-            window.setStatusBarColor(Color.parseColor("#b26c78"));
-            window.setNavigationBarColor(Color.parseColor("#b26c78"));
+        window.setStatusBarColor(Color.parseColor("#304352"));
+        window.setNavigationBarColor(Color.parseColor("#d7d2cc"));
 
-            val imageView = findViewById<ImageView>(R.id.customer_image)
+        fun saveImageToMediaStore(bitmap: Bitmap) {
+            val contentResolver = contentResolver
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, "filtered_image.jpg")
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+            }
+        }
 
-            val backButton = findViewById<ImageButton>(R.id.backButton)
+        val effects:RecyclerView = findViewById(R.id.effectsMenu)
+        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
 
-            backButton.setOnClickListener{
-                finish()
+        val imageView = findViewById<ImageView>(R.id.customer_image)
+
+        val backButton = findViewById<ImageButton>(R.id.backButton)
+
+        val saveButton = findViewById<ImageButton>(R.id.saveButton)
+
+        val loading = findViewById<LottieAnimationView>(R.id.loading_animation)
+
+        backButton.setOnClickListener {
+            finish()
+        }
+
+        val imageUriString = intent.getStringExtra("imageUri")
+        val imageUri = Uri.parse(imageUriString)
+        imageView.setImageURI(imageUri)
+
+        var drawable = imageView.drawable as BitmapDrawable
+        var bitmap = drawable.bitmap
+
+        val declineButton = findViewById<ImageButton>(R.id.decline)
+        val acceptButton = findViewById<ImageButton>(R.id.accept)
+
+        declineButton.setOnClickListener{
+            effects.visibility = View.INVISIBLE
+            recyclerView.visibility = View.VISIBLE
+            declineButton.visibility = View.INVISIBLE
+            acceptButton.visibility = View.INVISIBLE
+            imageView.setImageBitmap(bitmap)
+        }
+
+        acceptButton.setOnClickListener{
+            drawable = imageView.drawable as BitmapDrawable
+            bitmap = drawable.bitmap
+            declineButton.visibility = View.INVISIBLE
+            acceptButton.visibility = View.INVISIBLE
+            effects.visibility = View.INVISIBLE
+            recyclerView.visibility = View.VISIBLE
+        }
+
+        saveButton.setOnClickListener{
+            saveImageToMediaStore(bitmap)
+        }
+
+        val rotationBar = findViewById<SeekBar>(R.id.rotationBar)
+        val rotationBarProgress = findViewById<TextView>(R.id.rotationDegree)
+        val parentLayout:ViewGroup = rotationBar.parent as ViewGroup
+
+        val rootView = findViewById<View>(android.R.id.content)
+        rootView.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                rotationBar.visibility = View.INVISIBLE
+                rotationBarProgress.visibility = View.INVISIBLE
+                return@setOnTouchListener true
+            }
+            false
+        }
+
+        rotationBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                rotationBarProgress.text = progress.toString() + "°"
             }
 
+            override fun onStartTrackingTouch(rotationBar: SeekBar) {}
 
-            val imageUriString = intent.getStringExtra("imageUri")
-            val imageUri = Uri.parse(imageUriString)
-            imageView.setImageURI(imageUri)
-
-            var drawable = imageView.drawable as BitmapDrawable
-            var bitmap = drawable.bitmap
-
-            val rotationBar = findViewById<SeekBar>(R.id.rotationBar)
-            val rotationBarProgress = findViewById<TextView>(R.id.rotationDegree)
-
-            rotationBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                    rotationBarProgress.text = progress.toString()+"°"
+            override fun onStopTrackingTouch(rotationBar: SeekBar) {
+                suspend fun rotation(degrees: Double, bitmap: Bitmap) {
+                    imageView.visibility = View.INVISIBLE
+                    loading.visibility = View.VISIBLE
+                    val rotatedBitmap =
+                        ImageRotation.rotateBitmap(bitmap, degrees, this@FilterActivity)
+                    imageView.setImageBitmap(rotatedBitmap)
+                    loading.visibility = View.INVISIBLE
+                    imageView.visibility = View.VISIBLE
+                    rotationBar.isEnabled = true
+                    declineButton.visibility = View.VISIBLE
+                    acceptButton.visibility = View.VISIBLE
                 }
 
-                override fun onStartTrackingTouch(rotationBar: SeekBar) {
+                rotationBar.isEnabled = false
 
+                lifecycleScope.launch {
+                    rotation(rotationBar.progress.toDouble(), bitmap)
                 }
+            }
+        })
 
-                override fun onStopTrackingTouch(rotationBar: SeekBar) {
-                    suspend fun rotation(degrees:Double,bitmap:Bitmap){
-                        val rotatedBitmap =
-                            ImageRotation.rotateBitmap(bitmap, degrees, this@FilterActivity)
-                        imageView.setImageBitmap(rotatedBitmap)
+        val itemList:List<ItemData> = listOf(
+            ItemData(R.drawable.rotation_icon,"Поворот"),
+            ItemData(R.drawable.scale_icon,"Масштаб"),
+            ItemData(R.drawable.saturation,"Насыщенность"),
+            ItemData(R.drawable.bright,"Яркость"),
+            ItemData(R.drawable.filters_icon,"Фильтры"),
+            ItemData(R.drawable.contrast,"Контраст")
+        )
+
+        recyclerView.addItemDecoration(SpacesItemDecoration(5))
+        val adapter = CarouselAdapter(itemList, this)
+        recyclerView.adapter = adapter
+
+        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.layoutManager = layoutManager
+        layoutManager.scrollToPositionWithOffset(0, resources.displayMetrics.widthPixels / 2)
+
+        val snapHelper = LinearSnapHelper()
+        snapHelper.attachToRecyclerView(recyclerView)
+
+        val effectsList:List<ItemData> = listOf(
+            ItemData(R.drawable.negativ_filter,"Негатив"),
+            ItemData(R.drawable.red_filter,"Красный"),
+            ItemData(R.drawable.green_filter,"Зеленый"),
+            ItemData(R.drawable.blue_filter,"Синий"),
+            ItemData(R.drawable.gray_scale,"Оттенки серого"),
+            ItemData(R.drawable.mosaic_filter,"Мозаика"),
+            ItemData(R.drawable.sepia_filter,"Сепия"),
+        )
+
+
+        effects.addItemDecoration(SpacesItemDecoration(5))
+        val effectsAdapter = EffectsMenuAdapter(effectsList,this)
+        effects.adapter = effectsAdapter
+
+        val effectsLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        effects.layoutManager = effectsLayoutManager
+        layoutManager.scrollToPositionWithOffset(0,resources.displayMetrics.widthPixels / 2)
+        val effectsSnapHelper = LinearSnapHelper()
+        effectsSnapHelper.attachToRecyclerView(effects)
+
+        effectsAdapter.clickListener = object: CarouselAdapter.OnItemClickListener {
+            override fun onItemClick(position: Int, item: Int) {
+                when(position){
+                    0->{
+                        suspend fun negative(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
+                            val resultBitmap =
+                                ColorFilters.negative(bitmap)
+                            imageView.setImageBitmap(resultBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                        }
+                        lifecycleScope.launch {
+                            negative(bitmap)
+                        }
                     }
-
-                    rotationBar.isEnabled = false
-
-                    lifecycleScope.launch {
-                        rotation(rotationBar.progress.toDouble(),bitmap)
+                    1->{
+                        suspend fun red(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
+                            val resultBitmap =
+                                ColorFilters.redFilter(bitmap)
+                            imageView.setImageBitmap(resultBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                        }
+                        lifecycleScope.launch {
+                            red(bitmap)
+                        }
                     }
-
-                    rotationBar.postDelayed({
-                        rotationBar.isEnabled = true
-                    }, 2000)
+                    2->{
+                        suspend fun green(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
+                            val resultBitmap =
+                                ColorFilters.greenFilter(bitmap)
+                            imageView.setImageBitmap(resultBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                        }
+                        lifecycleScope.launch {
+                            green(bitmap)
+                        }
+                    }
+                    3->{
+                        suspend fun blue(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
+                            val resultBitmap =
+                                ColorFilters.blueFilter(bitmap)
+                            imageView.setImageBitmap(resultBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                        }
+                        lifecycleScope.launch {
+                            blue(bitmap)
+                        }
+                    }
+                    4->{
+                        suspend fun grayScale(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
+                            val resultBitmap =
+                                ColorFilters.grayscale(bitmap)
+                            imageView.setImageBitmap(resultBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                        }
+                        lifecycleScope.launch {
+                            grayScale(bitmap)
+                        }
+                    }
+                    5->{
+                        suspend fun mosaic(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
+                            val resultBitmap =
+                                ColorFilters.mosaic(bitmap,20)
+                            imageView.setImageBitmap(resultBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                        }
+                        lifecycleScope.launch {
+                            mosaic(bitmap)
+                        }
+                    }
+                    6->{
+                        suspend fun sepia(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
+                            val resultBitmap =
+                                ColorFilters.sepia(bitmap)
+                            imageView.setImageBitmap(resultBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                        }
+                        lifecycleScope.launch {
+                          sepia(bitmap)
+                        }
+                    }
                 }
-            })
+            }
 
-            val images = listOf(R.drawable.rotation_icon, R.drawable.scale_icon,
-                R.drawable.saturation,R.drawable.bright)
-            val itemClickListeners = listOf(
-                object : OnItemClickListener {
-                    override fun onItemClick(position: Int) {
+        }
+
+        adapter.clickListener = object : CarouselAdapter.OnItemClickListener {
+            override fun onItemClick(position: Int,item: Int) {
+                when(position) {
+                    0-> {
                         rotationBar.visibility = View.VISIBLE
                         rotationBarProgress.visibility = View.VISIBLE
                     }
-                },
-                object : OnItemClickListener {
-                    override fun onItemClick(position: Int) {
-
-                    }
-                },
-                object : OnItemClickListener {
-                    override fun onItemClick(position: Int) {
-                        suspend fun saturationFilter(bitmap: Bitmap){
+                    2->{
+                        suspend fun saturationFilter(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
                             val saturatedBitmap =
-                                SaturationFilter.saturation(bitmap)
+                                SaturationFilter.saturation(bitmap,0.5f)
                             imageView.setImageBitmap(saturatedBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                            declineButton.visibility = View.VISIBLE
+                            acceptButton.visibility = View.VISIBLE
                         }
                         lifecycleScope.launch {
                             saturationFilter(bitmap)
                         }
-                        //drawable = imageView.drawable as BitmapDrawable
-                        //bitmap = drawable.bitmap
                     }
-                },
-                object : OnItemClickListener {
-                    override fun onItemClick(position: Int) {
-                        suspend fun brightness(bitmap: Bitmap){
+                    3->{
+                        suspend fun brightness(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
                             val resultBitmap =
-                                Brightness.brightnessFilter(bitmap)
+                               ColorFilters.brightness(bitmap,100)
                             imageView.setImageBitmap(resultBitmap)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
+                            declineButton.visibility = View.VISIBLE
+                            acceptButton.visibility = View.VISIBLE
                         }
-
                         lifecycleScope.launch {
                             brightness(bitmap)
                         }
-
-                        //drawable = imageView.drawable as BitmapDrawable
-                        // bitmap = drawable.bitmap
                     }
-                },
-            )
-            val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
-            recyclerView.addItemDecoration(SpacesItemDecoration(5))
-            val adapter = CarouselAdapter(images,itemClickListeners,this)
-            recyclerView.adapter = adapter
+                    4->{
+                        recyclerView.visibility = View.INVISIBLE
+                        effects.visibility = View.VISIBLE
+                        declineButton.visibility = View.VISIBLE
+                        acceptButton.visibility = View.VISIBLE
 
-            val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-            recyclerView.layoutManager = layoutManager
-            layoutManager.scrollToPositionWithOffset(0, resources.displayMetrics.widthPixels / 2)
+                    }
+                    5->{
+                        suspend fun contrast(bitmap: Bitmap) {
+                            imageView.visibility = View.INVISIBLE
+                            loading.visibility = View.VISIBLE
+                            val resultBitmap =
+                                ColorFilters.contrast(bitmap,20)
+                            imageView.setImageBitmap(resultBitmap)
 
-            val snapHelper = LinearSnapHelper()
-            snapHelper.attachToRecyclerView(recyclerView)
+                            imageView.visibility = View.VISIBLE
+                            loading.visibility = View.INVISIBLE
 
-
+                            declineButton.visibility = View.VISIBLE
+                            acceptButton.visibility = View.VISIBLE
+                        }
+                        lifecycleScope.launch {
+                            contrast(bitmap)
+                        }
+                    }
+                }
+            }
         }
+    }
+}
 
 
-
-
- }

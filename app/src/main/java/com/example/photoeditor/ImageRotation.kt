@@ -30,11 +30,10 @@ class ImageRotation {
 
             val pixels = IntArray(rotatedWidth * rotatedHeight)
 
-            // Precompute constants
             val halfRotatedWidth = rotatedWidth / 2
             val halfRotatedHeight = rotatedHeight / 2
 
-            launch(Dispatchers.IO) {
+            launch(Dispatchers.Default) {
                 for (y in 0 until rotatedHeight) {
                     for (x in 0 until rotatedWidth) {
                         val rotatedX = x - halfRotatedWidth

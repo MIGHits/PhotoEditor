@@ -7,29 +7,70 @@
     android:layout_height="match_parent">
 
 
-
     <ImageView
         android:id="@+id/customer_image"
-        android:layout_width="366dp"
-        android:layout_height="503dp"
+        android:layout_width="400dp"
+        android:layout_height="500dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.488"
+        app:layout_constraintHorizontal_bias="0.454"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.258"
+        app:layout_constraintVertical_bias="0.151"
         app:srcCompat="@android:drawable/ic_menu_gallery" />
+
+    <ImageButton
+        android:id="@+id/decline"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/error"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/effectsMenu"
+        app:layout_constraintEnd_toStartOf="@+id/rotationBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/customer_image" />
+
+    <ImageButton
+        android:id="@+id/accept"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:visibility="invisible"
+        android:src="@drawable/check"
+        app:layout_constraintBottom_toTopOf="@+id/effectsMenu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.46"
+        app:layout_constraintStart_toEndOf="@+id/rotationBar"
+        app:layout_constraintTop_toBottomOf="@+id/customer_image" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-         />
+        app:layout_constraintTop_toTopOf="@+id/rotationDegree"
+        app:layout_constraintVertical_bias="1.0" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/effectsMenu"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/rotationDegree"
+        app:layout_constraintVertical_bias="1.0" />
 
     <ImageButton
         android:id="@+id/backButton"
@@ -39,10 +80,23 @@
         android:scaleType="centerCrop"
         android:src="@drawable/back"
         app:layout_constraintBottom_toTopOf="@+id/customer_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.012"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.206"
-        />
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageButton
+        android:id="@+id/saveButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/save_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/rotationDegree"
@@ -51,6 +105,7 @@
         android:layout_marginTop="4dp"
         android:text="0°"
         android:textAlignment="center"
+        android:textColor="@color/black"
         android:textSize="20sp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
@@ -64,10 +119,28 @@
         android:max="180"
         android:min="-180"
         android:progress="0"
+        android:progressTint="#ff901b"
+        android:thumbTint="#ff901b"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/customer_image"
-        app:layout_constraintVertical_bias="0.231" />
+        app:layout_constraintVertical_bias="0.149" />
+
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/loading_animation"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/customer_image"
+        app:layout_constraintEnd_toEndOf="@+id/customer_image"
+        app:layout_constraintStart_toStartOf="@+id/customer_image"
+        app:layout_constraintTop_toTopOf="@+id/customer_image"
+        app:layout_constraintVertical_bias="0.506"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/loading" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,16 +7,16 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="45dp"
-        android:layout_height="60dp"
+        android:layout_width="111dp"
+        android:layout_height="90dp"
         android:adjustViewBounds="true"
-        android:background = "@drawable/item_background"
         android:scaleType="fitCenter" />
     <TextView
         android:id="@+id/infoTextView"
-        android:layout_width="45dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:singleLine="true"
+        android:textAlignment="center"
         android:ellipsize="marquee"
         android:focusable="true"
         android:focusableInTouchMode="true"

@@ -6,20 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.photoeditor.R
+import com.example.photoeditor.ItemData
 
-
-
-interface OnItemClickListener {
-    fun onItemClick(position: Int)
-}
-
-class CarouselAdapter(private val images: List<Int>, private val itemClickListeners:
-    List<OnItemClickListener>,private val activity: Activity) :
+open class CarouselAdapter(private val images: List<ItemData>, private val activity: Activity) :
     RecyclerView.Adapter<CarouselAdapter.CarouselViewHolder>() {
+    var clickListener: OnItemClickListener? = null
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CarouselViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_container_filter, parent, false)
@@ -27,24 +24,25 @@ class CarouselAdapter(private val images: List<Int>, private val itemClickListen
     }
 
     override fun onBindViewHolder(holder: CarouselViewHolder, position: Int) {
-        holder.bind(images[position], itemClickListeners[position])
-
+        holder.imageView.setImageResource(images[position].image)
+        holder.titleTextView.text = images[position].title
+        holder.titleTextView.setSelected(true)
+        holder.itemView.setOnClickListener {
+            clickListener?.onItemClick(position,images[position].image)
+            val animation = AnimationUtils.loadAnimation(activity,R.anim.fade_out)
+            holder.itemView.startAnimation(animation)
+        }
     }
 
     override fun getItemCount(): Int {
         return images.size
     }
 
-    inner class CarouselViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val imageView: ImageView = itemView.findViewById(R.id.imageView)
-
-        fun bind(imageResId: Int, itemClickListener: OnItemClickListener) {
-            imageView.setImageResource(imageResId)
-            itemView.setOnClickListener {
-                itemClickListener.onItemClick(adapterPosition)
-                val animation = AnimationUtils.loadAnimation(activity,R.anim.fade_out)
-               itemView.startAnimation(animation)
-            }
-        }
+    interface OnItemClickListener {
+        fun onItemClick(position: Int, item: Int)
+    }
+    open inner class CarouselViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+         val imageView: ImageView = itemView.findViewById(R.id.imageView)
+        val titleTextView:TextView = itemView.findViewById(R.id.infoTextView)
     }
 }

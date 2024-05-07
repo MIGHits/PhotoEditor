@@ -27,8 +27,8 @@ class MainActivity : AppCompatActivity()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        window.setStatusBarColor(Color.parseColor("#b26c78"));
-        window.setNavigationBarColor(Color.parseColor("#b26c78"));
+        window.setStatusBarColor(Color.parseColor("#5e6666"));
+        window.setNavigationBarColor(Color.parseColor("#5e6666"));
         val photoPickButton = findViewById<ImageButton>(R.id.galleryButton)
         val cameraButton =  findViewById<ImageButton>(R.id.cameraButton)
 
