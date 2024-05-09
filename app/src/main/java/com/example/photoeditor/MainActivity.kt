@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
@@ -11,9 +12,14 @@ import android.graphics.Color
 import android.graphics.Color.argb
 import android.graphics.drawable.ColorDrawable
 import android.provider.MediaStore
+import android.provider.Settings
 import android.widget.ImageButton
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.photoeditor.FilterActivity
+import android.Manifest
 import com.example.photoeditor.R
 import kotlin.math.abs
 import kotlinx.coroutines.*
@@ -37,10 +43,50 @@ class MainActivity : AppCompatActivity()
         }
 
         photoPickButton.setOnClickListener {
-            openGallery()
+            val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            if (ContextCompat.checkSelfPermission(this, permissions[0]) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, permissions[1]) != PackageManager.PERMISSION_GRANTED)
+            {
+                ActivityCompat.requestPermissions(this, permissions, 0)
+            }
+            else
+            {
+                onGallery()
+            }
         }
     }
 
+    private fun onGallery()
+    {
+        val pickPhoto = Intent(Intent.ACTION_PICK)
+        pickPhoto.type = "image/*"
+        startActivityForResult(pickPhoto, REQUEST_CODE_IMAGE_PICK)
+    }
+    private fun openAppSettings() {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", packageName, null)
+        )
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 0) {
+            val granted = grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }
+            if (granted)
+            {
+                onGallery()
+            }
+            else
+            {
+                // Permission denied, inform the user
+                Toast.makeText(this, "Необходим доступ к фото и видео", Toast.LENGTH_SHORT).show()
+                openAppSettings()
+            }
+        }
+    }
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         startActivityForResult(intent, REQUEST_CODE_IMAGE_PICK)

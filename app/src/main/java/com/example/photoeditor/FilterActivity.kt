@@ -45,12 +45,28 @@ class FilterActivity: AppCompatActivity() {
         window.setStatusBarColor(Color.parseColor("#304352"));
         window.setNavigationBarColor(Color.parseColor("#d7d2cc"));
 
-        fun saveImageToMediaStore(bitmap: Bitmap) {
+       fun saveImageToMediaStore(bitmap: Bitmap) {
             val contentResolver = contentResolver
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, "filtered_image.jpg")
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                 put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+            }
+
+            val imageUri: Uri =
+                contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return
+
+            try {
+                val outputStream = contentResolver.openOutputStream(imageUri)
+                if (outputStream != null) {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                }
+                outputStream?.flush()
+                outputStream?.close()
+                Toast.makeText(this, "Изображение сохранено в MediaStore", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Не удалось сохранить изображение", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -126,7 +142,7 @@ class FilterActivity: AppCompatActivity() {
                     imageView.visibility = View.INVISIBLE
                     loading.visibility = View.VISIBLE
                     val rotatedBitmap =
-                        ImageRotation.rotateBitmap(bitmap, degrees, this@FilterActivity)
+                        ImageRotation.rotateBitmap(bitmap, degrees)
                     imageView.setImageBitmap(rotatedBitmap)
                     loading.visibility = View.INVISIBLE
                     imageView.visibility = View.VISIBLE
