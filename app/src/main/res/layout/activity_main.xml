@@ -7,40 +7,75 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.479"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <Button
-        android:id="@+id/photo_pick_button"
+        android:id="@+id/photoPickButt"
         style="@style/Widget.AppCompat.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="152dp"
         android:background="#E91E63"
+        android:onClick="takePhoto"
         android:text="Выбрать фото из галереи"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/image_save"
-        app:layout_constraintVertical_bias="0.343"
         app:strokeColor="#FFFFFF" />
 
     <ImageView
-        android:id="@+id/image_save"
-        android:layout_width="233dp"
-        android:layout_height="267dp"
+        android:id="@+id/imageToShow"
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.147"
-        app:srcCompat="@android:drawable/ic_menu_gallery" />
+        app:layout_constraintVertical_bias="0.128" />
+
+    <Button
+        android:id="@+id/firstTriangle"
+        android:layout_width="110dp"
+        android:layout_height="65dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:onClick="createFirstTriangle"
+        android:text="firstTriangle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/photoPickButt" />
+
+    <Button
+        android:id="@+id/transform"
+        android:layout_width="110dp"
+        android:layout_height="65dp"
+        android:layout_marginTop="16dp"
+        android:onClick="startChanges"
+        android:text="transform"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/photoPickButt" />
+
+    <Button
+        android:id="@+id/secondTriangle"
+        android:layout_width="110dp"
+        android:layout_height="65dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:onClick="createSecondTriangle"
+        android:text="secondTriangle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/photoPickButt" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="370dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="10dp"
+        android:onClick="startSimulation"
+        android:text="Cubic Simulation"
+        app:layout_constraintTop_toBottomOf="@+id/transform"
+        tools:layout_editor_absoluteX="21dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

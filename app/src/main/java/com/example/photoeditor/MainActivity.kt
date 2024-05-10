@@ -1,115 +1,244 @@
 package com.example.myapplication
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.content.Intent.ACTION_PICK
+import android.graphics.Bitmap
 import android.os.Bundle
-import android.widget.Button
+import android.provider.MediaStore
+import android.view.MotionEvent
+import android.view.View
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.net.Uri
-import com.bumptech.glide.Glide
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
-import android.graphics.drawable.Drawable
+import androidx.lifecycle.lifecycleScope
+import com.example.photoeditor.AffineTransform.AffineTransform
+import com.example.photoeditor.Cube3d.Scene3D
+import com.example.photoeditor.Cube3d.Tria3d
+import com.example.photoeditor.Cube3d.vec3d
 import com.example.photoeditor.R
-import kotlin.math.cos
-import kotlin.math.sin
+import com.example.photoeditor.Triangle2d
+import com.example.photoeditor.UsefulFuns.createColor
+import com.example.photoeditor.vec2d
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity()
 {
+    private lateinit var sourceImage:Bitmap
+    private lateinit var firstTriangle:Triangle2d
+    private lateinit var secondTriangle:Triangle2d
+    private var curTriangle:Int = 1
+    private var curPoints:Array<vec2d> = arrayOf(vec2d(0,0),vec2d(0,0),vec2d(0,0))
+    private var curIndex = 0
     private val PICK_IMAGE = 1
     private lateinit var imageView: ImageView
-    private var imageUri : Uri? = null
 
+    private var imageHeight:Int = 0
+    private var imageWidth:Int = 0
+
+    private var oldX = 0.0f
+    private var oldY = 0.0f
+    private var absAngleX = 0.0f
+    private var absAngleY = 0.0f
+
+    private val newScene = Scene3D()
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        imageView = findViewById(R.id.image_save)
-        val pickImageButton : Button = findViewById(R.id.photo_pick_button)
+        imageView = findViewById(R.id.imageToShow)
 
-        pickImageButton.setOnClickListener {
-            val pickPhoto = Intent(Intent.ACTION_PICK)
-            pickPhoto.type = "image/*"
-            startActivityForResult(pickPhoto, PICK_IMAGE)
+        imageView.viewTreeObserver.addOnGlobalLayoutListener {
+            initMesh()
         }
 
-        imageView.setOnClickListener {
-            if (imageUri != null)
-            {
-                imageView.setImageDrawable(null)
-                imageUri = null
+        imageView.setOnTouchListener { v, event ->
+            //if (event.action == MotionEvent.ACTION_DOWN){
+            //    val x =  imageWidth*(event.x)/imageView.width
+            //    val y =  imageHeight*(imageView.height - event.y)/imageView.height
+            //    Log.d("P","Point added")
+            //    addPoint(x.toInt(),y.toInt())
+            //    true
+            //}else{
+            //    false
+            //}
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    println(oldX)
+                    oldX = event.x
+                    oldY = event.y
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+
+                    absAngleX += (3.5f*(event.x - oldX)/imageView.width)
+                    absAngleY -= (3.5f*(event.y - oldY)/imageView.width)
+                    oldX = event.x
+                    oldY = event.y
+                    newScene.createRotationMatrix('y',absAngleX)
+                    newScene.createRotationMatrix('x',absAngleY)
+                    startSimulation()
+
+                }
+            }
+            true
+        }
+
+    }
+
+    fun initMesh() {
+        newScene.createCamera(0.1f,1000.0f,90.0f,imageView.height.toFloat()/imageView.width.toFloat(),vec3d(arrayOf(0.0f,0.0f,0.0f)))
+        newScene.createRotationMatrix('y',absAngleX)
+        newScene.createRotationMatrix('x',absAngleY)
+        newScene.loadMesh(arrayOf(
+            Tria3d(arrayOf(
+                vec3d(arrayOf(0.0f,0.0f,0.0f)),
+                vec3d(arrayOf(0.0f,1.0f,0.0f)),
+                vec3d(arrayOf(1.0f,1.0f,0.0f))),
+                createColor(255,0,0,255)
+            ),
+            Tria3d(arrayOf(
+                vec3d(arrayOf(0.0f,0.0f,0.0f)),
+                vec3d(arrayOf(1.0f,1.0f,0.0f)),
+                vec3d(arrayOf(1.0f,0.0f,0.0f))),
+                createColor(255,0,0,255)
+            ),
+
+            Tria3d(arrayOf(
+                vec3d(arrayOf(1.0f,0.0f,0.0f)),
+                vec3d(arrayOf(1.0f,1.0f,0.0f)),
+                vec3d(arrayOf(1.0f,1.0f,1.0f))),
+                createColor(255,255,0,255)
+            ),
+            Tria3d(arrayOf(
+                vec3d(arrayOf(1.0f,0.0f,0.0f)),
+                vec3d(arrayOf(1.0f,1.0f,1.0f)),
+                vec3d(arrayOf(1.0f,0.0f,1.0f))),
+                createColor(255,255,0,255)
+            ),
+
+            Tria3d(arrayOf(
+                vec3d(arrayOf(1.0f,0.0f,1.0f)),
+                vec3d(arrayOf(1.0f,1.0f,1.0f)),
+                vec3d(arrayOf(0.0f,1.0f,1.0f))),
+                createColor(0,255,0,255)
+            ),
+            Tria3d(arrayOf(
+                vec3d(arrayOf(1.0f,0.0f,1.0f)),
+                vec3d(arrayOf(0.0f,1.0f,1.0f)),
+                vec3d(arrayOf(0.0f,0.0f,1.0f))),
+                createColor(0,255,0,255)
+            ),
+
+            Tria3d(arrayOf(
+                vec3d(arrayOf(0.0f,0.0f,1.0f)),
+                vec3d(arrayOf(0.0f,1.0f,1.0f)),
+                vec3d(arrayOf(0.0f,1.0f,0.0f))),
+                createColor(0,255,255,255)
+            ),
+            Tria3d(arrayOf(
+                vec3d(arrayOf(0.0f,0.0f,1.0f)),
+                vec3d(arrayOf(0.0f,1.0f,0.0f)),
+                vec3d(arrayOf(0.0f,0.0f,0.0f))),
+                createColor(0,255,255,255)
+            ),
+
+            Tria3d(arrayOf(
+                vec3d(arrayOf(0.0f,1.0f,0.0f)),
+                vec3d(arrayOf(0.0f,1.0f,1.0f)),
+                vec3d(arrayOf(1.0f,1.0f,1.0f))),
+                createColor(0,0,255,255)
+            ),
+            Tria3d(arrayOf(
+                vec3d(arrayOf(0.0f,1.0f,0.0f)),
+                vec3d(arrayOf(1.0f,1.0f,1.0f)),
+                vec3d(arrayOf(1.0f,1.0f,0.0f))),
+                createColor(0,0,255,255)
+            ),
+
+            Tria3d(arrayOf(
+                vec3d(arrayOf(1.0f,0.0f,1.0f)),
+                vec3d(arrayOf(0.0f,0.0f,1.0f)),
+                vec3d(arrayOf(0.0f,0.0f,0.0f))),
+                createColor(255,0,255,255)
+            ),
+            Tria3d(arrayOf(
+                vec3d(arrayOf(1.0f,0.0f,1.0f)),
+                vec3d(arrayOf(0.0f,0.0f,0.0f)),
+                vec3d(arrayOf(1.0f,0.0f,0.0f))),
+                createColor(255,0,255,255)
+            )
+        ))
+    }
+    fun takePhoto(view: View){
+        val pickPhoto = Intent(ACTION_PICK , MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        startActivityForResult(pickPhoto, PICK_IMAGE)
+
+    }
+    fun addPoint(x:Int,y:Int){
+
+        curPoints[curIndex] = vec2d(x,y)
+        curIndex++
+        if (curIndex == curPoints.size) {
+            curIndex = 0
+            if (curTriangle == 1){
+                firstTriangle = Triangle2d(curPoints)
+            }else{
+                secondTriangle = Triangle2d(curPoints)
             }
         }
+    }
+    fun createFirstTriangle(view: View){
+        curIndex = 0
+        curTriangle = 1
+    }
+    fun createSecondTriangle(view: View){
+        curIndex = 0
+        curTriangle = 2
+    }
+    fun startSimulation(){
+
+        val changedBitmap = Bitmap.createBitmap(imageView.width, imageView.height, Bitmap.Config.ARGB_8888)
+        newScene.drawMesh(changedBitmap)
+        imageView.setImageBitmap(changedBitmap)
+    }
+    fun startChanges(view: View) {
+
+        if (firstTriangle != null && secondTriangle != null){
+             val aff = AffineTransform(firstTriangle,secondTriangle)
+             lifecycleScope.launch{
+                 imageView.setImageBitmap(aff.process(sourceImage))
+             }
+        }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == PICK_IMAGE)
         {
-            imageUri = data?.data
-
-            Glide.with(this)
-                .asBitmap()
-                .load(imageUri)
-                .into(object : CustomTarget<Bitmap>() {
-                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                        val rotatedBitmap = rotateBitmap(resource,45.0)
-                        imageView.setImageBitmap(rotatedBitmap)
-                    }
-
-                    override fun onLoadCleared(placeholder: Drawable?) {
-                        // Обработка отмены загрузки
-                    }
-                })
+            val imageUri = data?.data
+            sourceImage = MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
+            imageHeight = sourceImage.height
+            imageWidth = sourceImage.width
+            imageView.setImageBitmap(sourceImage)
         }
     }
 
-    fun rotateBitmap(sourceBitmap: Bitmap, angleInDegrees: Double): Bitmap {
-        val angleInRadians = Math.toRadians(angleInDegrees)
-        val cosAngle = Math.cos(angleInRadians)
-        val sinAngle = Math.sin(angleInRadians)
-
-        val sourceWidth = sourceBitmap.width
-        val sourceHeight = sourceBitmap.height
-        val centerX = sourceWidth / 2.0
-        val centerY = sourceHeight / 2.0
-
-        val rotatedWidth = (abs(sourceWidth * cosAngle) + abs(sourceHeight * sinAngle)).toInt()
-        val rotatedHeight = (abs(sourceHeight * cosAngle) + abs(sourceWidth * sinAngle)).toInt()
-
-        val rotatedBitmap = Bitmap.createBitmap(rotatedWidth, rotatedHeight, Bitmap.Config.ARGB_8888)
-
-        for (y in 0 until rotatedHeight) {
-            for (x in 0 until rotatedWidth) {
-                val rotatedX = x - rotatedWidth / 2
-                val rotatedY = y - rotatedHeight / 2
-                val sourceX = (rotatedX * cosAngle - rotatedY * sinAngle + centerX).toInt()
-                val sourceY = (rotatedY * cosAngle + rotatedX * sinAngle + centerY).toInt()
-
-                if (sourceX in 0 until sourceWidth && sourceY in 0 until sourceHeight) {
-                    rotatedBitmap.setPixel(x, y, sourceBitmap.getPixel(sourceX, sourceY))
-                } else {
-                    val backgroundColor = (this.window.decorView.background as? ColorDrawable)?.color ?: Color.WHITE
-                    rotatedBitmap.setPixel(x, y, backgroundColor)
-                }
-            }
-        }
-        return rotatedBitmap
-    }
 
 }
