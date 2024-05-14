@@ -12,7 +12,7 @@
         style="@style/Widget.AppCompat.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="152dp"
+        android:layout_marginBottom="120dp"
         android:background="#E91E63"
         android:onClick="takePhoto"
         android:text="Выбрать фото из галереи"
@@ -67,15 +67,5 @@
         android:text="secondTriangle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/photoPickButt" />
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="370dp"
-        android:layout_height="42dp"
-        android:layout_marginTop="10dp"
-        android:onClick="startSimulation"
-        android:text="Cubic Simulation"
-        app:layout_constraintTop_toBottomOf="@+id/transform"
-        tools:layout_editor_absoluteX="21dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

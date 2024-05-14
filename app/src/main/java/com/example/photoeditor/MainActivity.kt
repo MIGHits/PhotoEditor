@@ -20,17 +20,16 @@ import com.example.photoeditor.Cube3d.Scene3D
 import com.example.photoeditor.Cube3d.Tria3d
 import com.example.photoeditor.Cube3d.vec3d
 import com.example.photoeditor.R
-import com.example.photoeditor.Triangle2d
+import com.example.photoeditor.Tria2d
 import com.example.photoeditor.UsefulFuns.createColor
 import com.example.photoeditor.vec2d
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 class MainActivity : AppCompatActivity()
 {
     private lateinit var sourceImage:Bitmap
-    private lateinit var firstTriangle:Triangle2d
-    private lateinit var secondTriangle:Triangle2d
+    private lateinit var firstTriangle:Tria2d
+    private lateinit var secondTriangle:Tria2d
     private var curTriangle:Int = 1
     private var curPoints:Array<vec2d> = arrayOf(vec2d(0,0),vec2d(0,0),vec2d(0,0))
     private var curIndex = 0
@@ -42,7 +41,7 @@ class MainActivity : AppCompatActivity()
 
     private var oldX = 0.0f
     private var oldY = 0.0f
-    private var absAngleX = 0.0f
+    private var absAngleX = 0.2f
     private var absAngleY = 0.0f
 
     private val newScene = Scene3D()
@@ -172,18 +171,81 @@ class MainActivity : AppCompatActivity()
             ),
 
             Tria3d(arrayOf(
-                vec3d(arrayOf(1.0f,0.0f,1.0f)),
                 vec3d(arrayOf(0.0f,0.0f,1.0f)),
-                vec3d(arrayOf(0.0f,0.0f,0.0f))),
-                createColor(255,0,255,255)
-            ),
-            Tria3d(arrayOf(
-                vec3d(arrayOf(1.0f,0.0f,1.0f)),
                 vec3d(arrayOf(0.0f,0.0f,0.0f)),
                 vec3d(arrayOf(1.0f,0.0f,0.0f))),
                 createColor(255,0,255,255)
+            ),
+            Tria3d(arrayOf(
+                vec3d(arrayOf(0.0f,0.0f,1.0f)),
+                vec3d(arrayOf(1.0f,0.0f,0.0f)),
+                vec3d(arrayOf(1.0f,0.0f,1.0f))),
+                createColor(255,0,255,255)
             )
         ))
+        newScene.loadUV(arrayOf(
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(0,85),
+                vec2d(85,85)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(85,85),
+                vec2d(85,0)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(0,85),
+                vec2d(85,85)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(85,85),
+                vec2d(85,0)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(0,85),
+                vec2d(85,85)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(85,85),
+                vec2d(85,0)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(0,85),
+                vec2d(85,85)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(85,85),
+                vec2d(85,0)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(0,85),
+                vec2d(85,85)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(85,85),
+                vec2d(85,0)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(0,85),
+                vec2d(85,85)
+            )),
+            Tria2d(arrayOf(
+                vec2d(0,0),
+                vec2d(85,85),
+                vec2d(85,0)
+            ))
+        ))
+        startSimulation()
     }
     fun takePhoto(view: View){
         val pickPhoto = Intent(ACTION_PICK , MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -197,9 +259,9 @@ class MainActivity : AppCompatActivity()
         if (curIndex == curPoints.size) {
             curIndex = 0
             if (curTriangle == 1){
-                firstTriangle = Triangle2d(curPoints)
+                firstTriangle = Tria2d(curPoints)
             }else{
-                secondTriangle = Triangle2d(curPoints)
+                secondTriangle = Tria2d(curPoints)
             }
         }
     }
@@ -214,7 +276,7 @@ class MainActivity : AppCompatActivity()
     fun startSimulation(){
 
         val changedBitmap = Bitmap.createBitmap(imageView.width, imageView.height, Bitmap.Config.ARGB_8888)
-        newScene.drawMesh(changedBitmap)
+        newScene.drawMesh(changedBitmap,this)
         imageView.setImageBitmap(changedBitmap)
     }
     fun startChanges(view: View) {

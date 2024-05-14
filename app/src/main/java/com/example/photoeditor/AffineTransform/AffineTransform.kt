@@ -1,14 +1,12 @@
 package com.example.photoeditor.AffineTransform
 
 import android.graphics.Bitmap
-import com.example.photoeditor.Cube3d.vec3d
-import com.example.photoeditor.Triangle2d
-import com.example.photoeditor.vec2d
+import com.example.photoeditor.Tria2d
 import kotlinx.coroutines.*
 import kotlin.math.max
 import kotlin.math.min
 
-class AffineTransform(origTriangle: Triangle2d, finalTriangle: Triangle2d) {
+class AffineTransform(origTriangle: Tria2d, finalTriangle: Tria2d) {
     //Вычисление коэффициентов для уравнения, составленного из афинного преобразования
     private var origTriangleDet = det(arrayOf(arrayOf(origTriangle.fPt.x,origTriangle.sPt.x,origTriangle.tPt.x)
     ,arrayOf(origTriangle.fPt.y,origTriangle.sPt.y,origTriangle.tPt.y)

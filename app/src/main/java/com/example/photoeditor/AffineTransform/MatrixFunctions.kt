@@ -1,5 +1,8 @@
 package com.example.photoeditor.AffineTransform
 
+import com.example.photoeditor.Cube3d.vec3d
+import com.example.photoeditor.vec2d
+
 //Создает минор матрицы, без p строки и q столбца
 private fun getCofactor(matrix:Array<Array<Int>>, temp:Array<Array<Int>>, p:Int, q:Int, n:Int)
 {
@@ -41,4 +44,13 @@ fun det(matrix:Array<Array<Int>>, n:Int): Double{
     }
 
     return d
+}
+fun vecSum(vec1:vec3d,vec2:vec3d):vec3d{
+    return vec3d(arrayOf(vec1.x+vec2.x,vec1.y+vec2.y,vec1.z+vec2.z));
+}
+fun vecDiff(vec1:vec3d,vec2:vec3d):vec3d{
+    return vec3d(arrayOf(vec1.x-vec2.x,vec1.y-vec2.y,vec1.z-vec2.z));
+}
+fun scalarProduct(vec1:vec3d,vec2:vec3d):Float{
+    return vec1.x*vec2.x + vec1.y*vec2.y + vec1.z*vec2.z;
 }

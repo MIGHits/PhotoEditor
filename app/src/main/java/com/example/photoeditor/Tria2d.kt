@@ -1,6 +1,6 @@
 package com.example.photoeditor
 
-class Triangle2d(points: Array<vec2d>) {
+class Tria2d(points: Array<vec2d>) {
     val fPt : vec2d
     val sPt : vec2d
     val tPt : vec2d

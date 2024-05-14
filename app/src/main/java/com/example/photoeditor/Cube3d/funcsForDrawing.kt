@@ -1,92 +1,19 @@
 package com.example.photoeditor.Cube3d
 
+import android.content.Context
 import android.graphics.Bitmap
-import com.example.photoeditor.UsefulFuns.calculateLengthOfVec
+import com.example.photoeditor.AffineTransform.AffineTransform
+import com.example.photoeditor.Tria2d
+import com.example.photoeditor.UsefulFuns.convertTria3dTo2d
 import com.example.photoeditor.vec2d
 import com.example.photoeditor.UsefulFuns.findMax3
 import com.example.photoeditor.UsefulFuns.findMin3
+import com.example.photoeditor.UsefulFuns.getBitmapFromAsset
 import com.example.photoeditor.UsefulFuns.multiply4x4MatVec
-import com.example.photoeditor.UsefulFuns.normilazeVec
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-fun drawLine(source:Bitmap, pointOne: vec3d, pointTwo: vec3d, color:Int):Bitmap{
-    val changedBitmap = Bitmap.createBitmap(source.width, source.height, Bitmap.Config.ARGB_8888)
-    val deltaX = pointTwo.x - pointOne.x
-    val deltaY = pointTwo.y - pointOne.y
-    val absDeltaX = abs(deltaX)
-    val absDeltaY = abs(deltaY)
-
-    var accretion = 0.0
-
-    if (absDeltaX >= absDeltaY){
-        var y = pointOne.y
-        val direction:Int
-        if (deltaY != 0.0f){
-            if (deltaY > 0){
-                direction = 1
-            }else{
-                direction = -1
-            }
-        }else{
-            direction = 0
-        }
-        val addElement:Int
-        val endX:Float
-        var curX = pointOne.x
-        if (deltaX > 0){
-            endX = pointTwo.x
-            addElement = 1
-        }else{
-            endX = pointTwo.x
-            addElement = -1
-        }
-        while(curX * addElement <= endX * addElement){
-            println(curX)
-            source.setPixel(curX.toInt(),y.toInt(),color)
-            accretion += absDeltaY
-            if (accretion >= absDeltaX){
-                accretion -= absDeltaX
-                y += direction
-            }
-            curX += addElement
-        }
-    }else{
-        var x = pointOne.x
-        val direction:Int
-        if (deltaX != 0.0f){
-            if (deltaX > 0){
-                direction = 1
-            }else{
-                direction = -1
-            }
-        }else{
-            direction = 0
-        }
-        val addElement:Int
-        val endY:Float
-        var curY = pointOne.y
-        if (deltaY > 0){
-            endY = pointTwo.y
-            addElement = 1
-        }else{
-            endY = pointTwo.y
-            addElement = -1
-        }
-        while(curY * addElement<= endY * addElement ){
-            println(curY)
-            source.setPixel(x.toInt(),curY.toInt(),color)
-            accretion += absDeltaX
-            if (accretion >= absDeltaY){
-                accretion -= absDeltaY
-                x += direction
-            }
-            curY += addElement
-        }
-    }
-    return changedBitmap
-}
 fun isPointInTriangle(p:vec2d, triangle: Tria3d):Boolean{
     val a = triangle.p[0]
     val b = triangle.p[1]
@@ -111,33 +38,27 @@ fun findBox2D(triangle: Tria3d, width:Int, height:Int):Box2D{
         0.0f))
     return result
 }
-fun drawTriangle(pixels:IntArray, triangle: Tria3d, width:Int, height:Int){
+fun drawTriangle(pixels:IntArray, triangle: Tria3d,triangleUV:Tria2d, width:Int, height:Int,context:Context){
+
+    val textureBitmap = getBitmapFromAsset(context, "texture.png")
+
+    val texture = IntArray(textureBitmap.width*textureBitmap.height)
+    textureBitmap.getPixels(texture,0,textureBitmap.width,0,0,textureBitmap.width,textureBitmap.height)
+
+
+    val aff = AffineTransform(triangleUV, convertTria3dTo2d(triangle))
     val box = findBox2D(triangle, width, height)
+    var oldPos:Array<Double>
     for(y in box.topLeft.y.toInt()..box.botRight.y.toInt()){
         for(x in box.topLeft.x.toInt()..box.botRight.x.toInt()){
             if (isPointInTriangle(vec2d(x,y),triangle) ){
-                pixels[x + y*width] = triangle.clr
+                oldPos = aff.oldPos(x,y)
+                if (oldPos[0] < 86 && oldPos[0] >= 0.0 && oldPos[1] < 86 && oldPos[1] >= 0.0) {
+                    pixels[x + y*width] = texture[oldPos[0].toInt() + oldPos[1].toInt()*86]
+                }
             }
         }
     }
 }
-fun drawTriangle1(image:Bitmap, triangle: Tria3d){
-    drawLine(image,triangle.p[0],triangle.p[1],triangle.clr)
-    drawLine(image,triangle.p[1],triangle.p[2],triangle.clr)
-    drawLine(image,triangle.p[2],triangle.p[0],triangle.clr)
-}
-//-------------------------------------------------------------------------------
 
-fun applyTransformMatrixToTria(oldTria:Tria3d,matrix:mat4x4):Tria3d{
-    val newTriaTransformed = Tria3d(arrayOf(
-        vec3d(arrayOf(0.0f,0.0f,0.0f)),
-        vec3d(arrayOf(0.0f,0.0f,0.0f)),
-        vec3d(arrayOf(0.0f,0.0f,0.0f))),
-        oldTria.clr
-    )
-    multiply4x4MatVec(oldTria.p[0],newTriaTransformed.p[0],matrix)
-    multiply4x4MatVec(oldTria.p[1],newTriaTransformed.p[1],matrix)
-    multiply4x4MatVec(oldTria.p[2],newTriaTransformed.p[2],matrix)
-    return newTriaTransformed
-}
 

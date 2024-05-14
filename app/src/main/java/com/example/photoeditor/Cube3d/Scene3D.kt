@@ -1,7 +1,12 @@
 package com.example.photoeditor.Cube3d
 
+import android.content.Context
 import android.graphics.Bitmap
+import com.example.photoeditor.AffineTransform.scalarProduct
+import com.example.photoeditor.AffineTransform.vecDiff
+import com.example.photoeditor.Tria2d
 import com.example.photoeditor.UsefulFuns.calculateLengthOfVec
+import com.example.photoeditor.UsefulFuns.multiply4x4MatVec
 import com.example.photoeditor.UsefulFuns.normilazeVec
 import kotlin.math.cos
 import kotlin.math.sin
@@ -33,6 +38,9 @@ class Scene3D {
         midCorrection.matrix[3][2] = -0.5f
         mesh.tris = obj
     }
+    fun loadUV(obj: Array<Tria2d>){
+        mesh.trisUV = obj
+    }
     fun createRotationMatrix(axis:Char,angle:Float){
         when(axis){
             'x' ->{
@@ -56,50 +64,69 @@ class Scene3D {
 
         }
     }
-    fun drawMesh(image: Bitmap){
+    fun drawMesh(image: Bitmap,context: Context){
 
         val pixels = IntArray(image.width*image.height)
         image.getPixels(pixels,0,image.width,0,0,image.width,image.height)
 
+        //Виды треугольников, которые получатся после преобразований по матрицам
+        var newMiddled:Tria3d
+        var newTriaRotatedY:Tria3d
+        var newTriaRotatedX:Tria3d
+        var newTriaInCameraFOV:Tria3d
+        //Линии для нахождения нормалей
+        var line1:vec3d
+        var line2:vec3d
+        var normal:vec3d
         for (i in 0..<mesh.tris.size){
 
-            val newMiddled = applyTransformMatrixToTria(mesh.tris[i],midCorrection)
+            newMiddled = applyTransformMatrixToTria(mesh.tris[i],midCorrection)
 
-            val newTriaRotatedY = applyTransformMatrixToTria(newMiddled,matYRot)
+            newTriaRotatedY = applyTransformMatrixToTria(newMiddled,matYRot)
 
-            val newTriaRotatedX = applyTransformMatrixToTria(newTriaRotatedY,matXRot)
+            newTriaRotatedX = applyTransformMatrixToTria(newTriaRotatedY,matXRot)
 
-            newTriaRotatedX.p[0].z = newTriaRotatedX.p[0].z + 3.0f
-            newTriaRotatedX.p[1].z = newTriaRotatedX.p[1].z + 3.0f
-            newTriaRotatedX.p[2].z = newTriaRotatedX.p[2].z + 3.0f
+            newTriaRotatedX.p[0].z += 3.0f
+            newTriaRotatedX.p[1].z += 3.0f
+            newTriaRotatedX.p[2].z += 3.0f
 
-            val line1 = vec3d(arrayOf(newTriaRotatedX.p[1].x - newTriaRotatedX.p[0].x
+            line1 = vec3d(arrayOf(newTriaRotatedX.p[1].x - newTriaRotatedX.p[0].x
                 ,newTriaRotatedX.p[1].y - newTriaRotatedX.p[0].y
                 ,newTriaRotatedX.p[1].z - newTriaRotatedX.p[0].z))
-            val line2 = vec3d(arrayOf(newTriaRotatedX.p[2].x - newTriaRotatedX.p[0].x
+            line2 = vec3d(arrayOf(newTriaRotatedX.p[2].x - newTriaRotatedX.p[0].x
                 ,newTriaRotatedX.p[2].y - newTriaRotatedX.p[0].y
                 ,newTriaRotatedX.p[2].z - newTriaRotatedX.p[0].z))
-            val normal = vec3d(arrayOf(line1.y * line2.z - line1.z * line2.y
+            normal = vec3d(arrayOf(line1.y * line2.z - line1.z * line2.y
                 ,line1.z * line2.x - line1.x * line2.z
                 ,line1.x * line2.y - line1.y * line2.x))
             normilazeVec(normal, calculateLengthOfVec(normal))
-            if (normal.x * (newTriaRotatedX.p[0].x - vCamera.x) +
-                normal.y * (newTriaRotatedX.p[0].y - vCamera.y) +
-                normal.z * (newTriaRotatedX.p[0].z - vCamera.z) >= 0) continue
-            val newTriaInCameraFOV = applyTransformMatrixToTria(newTriaRotatedX,matProj)
+            if (scalarProduct(normal,vecDiff(newTriaRotatedX.p[0],vCamera)) < 0) {
+                newTriaInCameraFOV = applyTransformMatrixToTria(newTriaRotatedX,matProj)
 
-            newTriaInCameraFOV.p[0].x += 1.0f; newTriaInCameraFOV.p[0].y += 1.0f
-            newTriaInCameraFOV.p[1].x += 1.0f; newTriaInCameraFOV.p[1].y += 1.0f
-            newTriaInCameraFOV.p[2].x += 1.0f; newTriaInCameraFOV.p[2].y += 1.0f
+                newTriaInCameraFOV.p[0].x += 1.0f; newTriaInCameraFOV.p[0].y += 1.0f
+                newTriaInCameraFOV.p[1].x += 1.0f; newTriaInCameraFOV.p[1].y += 1.0f
+                newTriaInCameraFOV.p[2].x += 1.0f; newTriaInCameraFOV.p[2].y += 1.0f
 
-            newTriaInCameraFOV.p[0].x *= 0.5f * image.width; newTriaInCameraFOV.p[0].y *= 0.5f * image.height
-            newTriaInCameraFOV.p[1].x *= 0.5f * image.width; newTriaInCameraFOV.p[1].y *= 0.5f * image.height
-            newTriaInCameraFOV.p[2].x *= 0.5f * image.width; newTriaInCameraFOV.p[2].y *= 0.5f * image.height
+                newTriaInCameraFOV.p[0].x *= 0.5f * image.width; newTriaInCameraFOV.p[0].y *= 0.5f * image.height
+                newTriaInCameraFOV.p[1].x *= 0.5f * image.width; newTriaInCameraFOV.p[1].y *= 0.5f * image.height
+                newTriaInCameraFOV.p[2].x *= 0.5f * image.width; newTriaInCameraFOV.p[2].y *= 0.5f * image.height
 
-            drawTriangle(pixels,newTriaInCameraFOV,image.width,image.height)
-
+                drawTriangle(pixels,newTriaInCameraFOV,mesh.trisUV[i],image.width,image.height,context)
+            }
         }
         image.setPixels(pixels, 0, image.width, 0, 0, image.width, image.height)
 
+    }
+    fun applyTransformMatrixToTria(oldTria:Tria3d,matrix:mat4x4):Tria3d{
+        val newTriaTransformed = Tria3d(arrayOf(
+            vec3d(arrayOf(0.0f,0.0f,0.0f)),
+            vec3d(arrayOf(0.0f,0.0f,0.0f)),
+            vec3d(arrayOf(0.0f,0.0f,0.0f))),
+            oldTria.clr
+        )
+        multiply4x4MatVec(oldTria.p[0],newTriaTransformed.p[0],matrix)
+        multiply4x4MatVec(oldTria.p[1],newTriaTransformed.p[1],matrix)
+        multiply4x4MatVec(oldTria.p[2],newTriaTransformed.p[2],matrix)
+        return newTriaTransformed
     }
 }
