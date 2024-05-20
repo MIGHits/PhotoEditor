@@ -1,40 +1,41 @@
 package com.example.photoeditor.AffineTransform
 
 import android.graphics.Bitmap
+import com.example.photoeditor.Cube3d.Tria3d
 import com.example.photoeditor.Tria2d
 import kotlinx.coroutines.*
 import kotlin.math.max
 import kotlin.math.min
 
-class AffineTransform(origTriangle: Tria2d, finalTriangle: Tria2d) {
+class AffineTransform(origTriangle: Tria3d) {
     //Вычисление коэффициентов для уравнения, составленного из афинного преобразования
-    private var origTriangleDet = det(arrayOf(arrayOf(origTriangle.fPt.x,origTriangle.sPt.x,origTriangle.tPt.x)
-    ,arrayOf(origTriangle.fPt.y,origTriangle.sPt.y,origTriangle.tPt.y)
-    ,arrayOf(1,1,1)),3).toDouble()
+    private var origTriangleDet = det(arrayOf(arrayOf(origTriangle.t[0].x,origTriangle.t[1].x,origTriangle.t[2].x)
+        ,arrayOf(origTriangle.t[0].y,origTriangle.t[1].y,origTriangle.t[2].y)
+        ,arrayOf(1.0f,1.0f,1.0f)),3)
 
-    private var x1Coef = det(arrayOf(arrayOf(finalTriangle.fPt.x,finalTriangle.sPt.x,finalTriangle.tPt.x)
-        ,arrayOf(origTriangle.fPt.y,origTriangle.sPt.y,origTriangle.tPt.y)
-        , arrayOf(1,1,1)),3) / origTriangleDet
+    private var x1Coef = det(arrayOf(arrayOf(origTriangle.p[0].x,origTriangle.p[1].x,origTriangle.p[2].x)
+        ,arrayOf(origTriangle.t[0].y,origTriangle.t[1].y,origTriangle.t[2].y)
+        , arrayOf(1.0f,1.0f,1.0f)),3) / origTriangleDet
 
-    private var y1Coef = -det(arrayOf(arrayOf(finalTriangle.fPt.x,finalTriangle.sPt.x,finalTriangle.tPt.x)
-        ,arrayOf(origTriangle.fPt.x,origTriangle.sPt.x,origTriangle.tPt.x)
-        , arrayOf(1,1,1)),3) / origTriangleDet
+    private var y1Coef = -det(arrayOf(arrayOf(origTriangle.p[0].x,origTriangle.p[1].x,origTriangle.p[2].x)
+        ,arrayOf(origTriangle.t[0].x,origTriangle.t[1].x,origTriangle.t[2].x)
+        , arrayOf(1.0f,1.0f,1.0f)),3) / origTriangleDet
 
-    private var free1Coef = det(arrayOf(arrayOf(finalTriangle.fPt.x,finalTriangle.sPt.x,finalTriangle.tPt.x)
-        ,arrayOf(origTriangle.fPt.x,origTriangle.sPt.x,origTriangle.tPt.x)
-        ,arrayOf(origTriangle.fPt.y,origTriangle.sPt.y,origTriangle.tPt.y)),3)  / origTriangleDet
+    private var free1Coef = det(arrayOf(arrayOf(origTriangle.p[0].x,origTriangle.p[1].x,origTriangle.p[2].x)
+        ,arrayOf(origTriangle.t[0].x,origTriangle.t[1].x,origTriangle.t[2].x)
+        ,arrayOf(origTriangle.t[0].y,origTriangle.t[1].y,origTriangle.t[2].y)),3)  / origTriangleDet
 
-    private var x2Coef = det(arrayOf(arrayOf(finalTriangle.fPt.y,finalTriangle.sPt.y,finalTriangle.tPt.y)
-        ,arrayOf(origTriangle.fPt.y,origTriangle.sPt.y,origTriangle.tPt.y)
-        , arrayOf(1,1,1)),3)  / origTriangleDet
+    private var x2Coef = det(arrayOf(arrayOf(origTriangle.p[0].y,origTriangle.p[1].y,origTriangle.p[2].y)
+        ,arrayOf(origTriangle.t[0].y,origTriangle.t[1].y,origTriangle.t[2].y)
+        , arrayOf(1.0f,1.0f,1.0f)),3)  / origTriangleDet
 
-    private var y2Coef = -det(arrayOf(arrayOf(finalTriangle.fPt.y,finalTriangle.sPt.y,finalTriangle.tPt.y)
-        ,arrayOf(origTriangle.fPt.x,origTriangle.sPt.x,origTriangle.tPt.x)
-        , arrayOf(1,1,1)),3)  / origTriangleDet
+    private var y2Coef = -det(arrayOf(arrayOf(origTriangle.p[0].y,origTriangle.p[1].y,origTriangle.p[2].y)
+        ,arrayOf(origTriangle.t[0].x,origTriangle.t[1].x,origTriangle.t[2].x)
+        , arrayOf(1.0f,1.0f,1.0f)),3)  / origTriangleDet
 
-    private var free2Coef = det(arrayOf(arrayOf(finalTriangle.fPt.y,finalTriangle.sPt.y,finalTriangle.tPt.y)
-        ,arrayOf(origTriangle.fPt.x,origTriangle.sPt.x,origTriangle.tPt.x)
-        ,arrayOf(origTriangle.fPt.y,origTriangle.sPt.y,origTriangle.tPt.y)),3)  / origTriangleDet
+    private var free2Coef = det(arrayOf(arrayOf(origTriangle.p[0].y,origTriangle.p[1].y,origTriangle.p[2].y)
+        ,arrayOf(origTriangle.t[0].x,origTriangle.t[1].x,origTriangle.t[2].x)
+        ,arrayOf(origTriangle.t[0].y,origTriangle.t[1].y,origTriangle.t[2].y)),3)  / origTriangleDet
 
     private var coefEquation1 = y1Coef * free2Coef - y2Coef * free1Coef
     private var coefEquation2 = x2Coef * free1Coef - free2Coef * x1Coef
@@ -70,7 +71,7 @@ class AffineTransform(origTriangle: Tria2d, finalTriangle: Tria2d) {
 
         changedBitmap
     }
-    public fun oldPos(x:Int,y:Int):Array<Double>{
+    public fun oldPos(x:Int,y:Int):Array<Float>{
         return arrayOf((y2Coef * x - y1Coef * y + coefEquation1) / (coefEquation3)
             ,(x1Coef * y - x2Coef * x + coefEquation2) / (coefEquation4))
     }

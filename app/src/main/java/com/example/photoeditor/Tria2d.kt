@@ -1,12 +1,6 @@
 package com.example.photoeditor
 
-class Tria2d(points: Array<vec2d>) {
-    val fPt : vec2d
-    val sPt : vec2d
-    val tPt : vec2d
-    init {
-        fPt = points[0]
-        sPt = points[1]
-        tPt = points[2]
-    }
+import com.example.photoeditor.Cube3d.vec3d
+
+class Tria2d(var p1:vec2d,var p2:vec2d,var p3:vec2d) {
 }

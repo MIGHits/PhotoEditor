@@ -11,10 +11,10 @@ import java.io.IOException
 import java.io.InputStream
 
 fun convertVec3dTo2d(vec:vec3d):vec2d{
-    return vec2d(vec.x.toInt(),vec.y.toInt())
+    return vec2d(vec.x,vec.y)
 }
 fun convertTria3dTo2d(tria: Tria3d):Tria2d{
-    return Tria2d(arrayOf(convertVec3dTo2d(tria.p[0]),convertVec3dTo2d(tria.p[1]),convertVec3dTo2d(tria.p[2])))
+    return Tria2d(convertVec3dTo2d(tria.p[0]),convertVec3dTo2d(tria.p[1]),convertVec3dTo2d(tria.p[2]))
 }
 fun getBitmapFromAsset(context: Context, filePath: String): Bitmap {
     val assetManager = context.assets

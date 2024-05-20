@@ -2,6 +2,7 @@ package com.example.photoeditor.Resize
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import com.example.photoeditor.SuperSampling.MLAA
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -18,7 +19,7 @@ fun resize(sourceBitmap:Bitmap,resizeXScale:Double,resizeYScale:Double): Bitmap 
 }
 private fun bilinearInterpolation(sourceBitmap:Bitmap,resizeXScale:Double,resizeYScale:Double,newImgWidth:Int,newImgHeight:Int): Bitmap {
     val resizedBitmap = Bitmap.createBitmap(newImgWidth, newImgHeight, Bitmap.Config.ARGB_8888)
-
+    //MLAA(sourceBitmap)
     for (y in 0 until newImgHeight) {
         for (x in 0 until newImgWidth) {
             val originalX = x / resizeXScale
@@ -41,7 +42,7 @@ private fun bilinearInterpolation(sourceBitmap:Bitmap,resizeXScale:Double,resize
             resizedBitmap.setPixel(x, y, calculateMiddleInterpolation(newC1,newC2,dy))
         }
     }
-    return resizedBitmap
+    return MLAA(resizedBitmap)
 }
 private fun trilinearInterpolation(sourceBitmap:Bitmap,resizeXScale:Double,resizeYScale:Double,newImgWidth:Int,newImgHeight:Int) : Bitmap {
     var resizeFactor = 1.0
