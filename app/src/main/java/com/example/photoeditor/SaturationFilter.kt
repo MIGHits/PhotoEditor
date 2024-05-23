@@ -58,9 +58,9 @@ class SaturationFilter {
             else if ( h >= 240 && h < 300) { r = x; g = 0f; b = c }
             else { r = c; g = 0f; b = x }
 
-            val red = ((r + m) * 255).toInt()
-            val green = ((g + m) * 255).toInt()
-            val blue = ((b + m) * 255).toInt()
+            val red = ((r + m) * 255).toInt().coerceIn(0, 255)
+            val green = ((g + m) * 255).toInt().coerceIn(0, 255)
+            val blue = ((b + m) * 255).toInt().coerceIn(0, 255)
 
             return Color.rgb(red, green, blue)
         }

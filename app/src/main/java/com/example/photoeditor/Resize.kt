@@ -2,15 +2,17 @@ package com.example.photoeditor
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 import kotlin.math.floor
 
 class Resize {
     companion object {
-        fun callResize(sourceBitmap: Bitmap, resizeXScale: Double, resizeYScale: Double): Bitmap {
+       suspend fun callResize(sourceBitmap: Bitmap, resizeXScale: Double, resizeYScale: Double): Bitmap = withContext(Dispatchers.Default) {
             val newImgWidth: Int = (sourceBitmap.width * resizeXScale).toInt()
             val newImgHeight = (sourceBitmap.height * resizeYScale).toInt()
-            return if (resizeXScale + resizeYScale >= 2.0) {
+           if (resizeXScale + resizeYScale >= 2.0) {
                 bilinearInterpolation(
                     sourceBitmap,
                     resizeXScale,
