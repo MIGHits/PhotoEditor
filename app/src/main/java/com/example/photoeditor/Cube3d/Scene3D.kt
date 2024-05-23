@@ -6,7 +6,6 @@ import com.example.photoeditor.AffineTransform.det
 import com.example.photoeditor.AffineTransform.scalarProduct
 import com.example.photoeditor.AffineTransform.vecDiff
 import com.example.photoeditor.AffineTransform.vecDiv
-import com.example.photoeditor.Tria2d
 import com.example.photoeditor.UsefulFuns.calculateLengthOfVec
 import com.example.photoeditor.UsefulFuns.createColor
 import com.example.photoeditor.UsefulFuns.multiply4x4MatVec
@@ -44,13 +43,12 @@ class Scene3D {
         midCorrection.matrix[3][1] = -0.5f
         midCorrection.matrix[3][2] = -0.5f
         mesh.tris = Array(obj.size) { Tria3d(
-            vec3d(0.0f,0.0f,0.0f,0.0f),
-            vec3d(0.0f,0.0f,0.0f,0.0f),
-            vec3d(0.0f,0.0f,0.0f,0.0f),
+            vec3d(0.0f,0.0f,0.0f,1.0f),
+            vec3d(0.0f,0.0f,0.0f,1.0f),
+            vec3d(0.0f,0.0f,0.0f,1.0f),
             vec2d(0.0f,0.0f),
             vec2d(0.0f,0.0f),
-            vec2d(0.0f,0.0f),
-            createColor(0,0,0,0)
+            vec2d(0.0f,0.0f)
         )  }
         for(i in 0..<obj.size){
             mesh.tris[i] = applyTransformMatrixToTria(obj[i],midCorrection)
@@ -112,13 +110,13 @@ class Scene3D {
 
             line1 = vec3d(newTriaRotatedX.p[1].x - newTriaRotatedX.p[0].x
                 ,newTriaRotatedX.p[1].y - newTriaRotatedX.p[0].y
-                ,newTriaRotatedX.p[1].z - newTriaRotatedX.p[0].z,0.0f)
+                ,newTriaRotatedX.p[1].z - newTriaRotatedX.p[0].z)
             line2 = vec3d(newTriaRotatedX.p[2].x - newTriaRotatedX.p[0].x
                 ,newTriaRotatedX.p[2].y - newTriaRotatedX.p[0].y
-                ,newTriaRotatedX.p[2].z - newTriaRotatedX.p[0].z,0.0f)
+                ,newTriaRotatedX.p[2].z - newTriaRotatedX.p[0].z)
             normal = vec3d(line1.y * line2.z - line1.z * line2.y
                 ,line1.z * line2.x - line1.x * line2.z
-                ,line1.x * line2.y - line1.y * line2.x,0.0f)
+                ,line1.x * line2.y - line1.y * line2.x)
             normilazeVec(normal, calculateLengthOfVec(normal))
             if (scalarProduct(normal,vecDiff(newTriaRotatedX.p[0],vCamera)) < 0) {
                 newTriaInCameraFOV = applyTransformMatrixToTria(newTriaRotatedX,matProj)
@@ -156,13 +154,12 @@ class Scene3D {
     }
     fun applyTransformMatrixToTria(oldTria:Tria3d,matrix:mat4x4):Tria3d{
         val newTriaTransformed = Tria3d(
-            vec3d(0.0f,0.0f,0.0f,0.0f),
-            vec3d(0.0f,0.0f,0.0f,0.0f),
-            vec3d(0.0f,0.0f,0.0f,0.0f),
+            vec3d(0.0f,0.0f,0.0f),
+            vec3d(0.0f,0.0f,0.0f),
+            vec3d(0.0f,0.0f,0.0f),
             vec2d(oldTria.t[0].x,oldTria.t[0].y),
             vec2d(oldTria.t[1].x,oldTria.t[1].y),
-            vec2d(oldTria.t[2].x,oldTria.t[2].y),
-            oldTria.clr
+            vec2d(oldTria.t[2].x,oldTria.t[2].y)
         )
         multiply4x4MatVec(oldTria.p[0],newTriaTransformed.p[0],matrix)
         multiply4x4MatVec(oldTria.p[1],newTriaTransformed.p[1],matrix)

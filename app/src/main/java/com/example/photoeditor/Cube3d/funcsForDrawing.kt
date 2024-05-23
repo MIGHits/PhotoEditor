@@ -23,10 +23,10 @@ fun findBox2D(tris: Tria3d, width:Int, height:Int):Box2D{
     val result = Box2D(
         vec3d(max(findMin3(tris.p[0].x,tris.p[1].x,tris.p[2].x),0.0f),
               max(findMin3(tris.p[0].y,tris.p[1].y,tris.p[2].y),0.0f),
-            0.0f,0.0f),
+            0.0f),
         vec3d(min(findMax3(tris.p[0].x,tris.p[1].x,tris.p[2].x),width.toFloat()),
               min(findMax3(tris.p[0].y,tris.p[1].y,tris.p[2].y),height.toFloat()),
-            0.0f,0.0f))
+            0.0f))
     return result
 }
 fun drawTriangle(pixels:IntArray, triangle: Tria3d, imgWidth:Int,imgHeight: Int, texture:IntArray, texWidth:Int){
