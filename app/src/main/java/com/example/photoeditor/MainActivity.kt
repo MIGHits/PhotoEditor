@@ -15,20 +15,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import com.example.photoeditor.AffineTransform.AffineTransform
-import com.example.photoeditor.AffineTransform.det
 import com.example.photoeditor.Cube3d.Scene3D
 import com.example.photoeditor.Cube3d.Tria3d
 import com.example.photoeditor.Cube3d.vec3d
 import com.example.photoeditor.R
 import com.example.photoeditor.Resize.resize
-import com.example.photoeditor.SuperSampling.MLAA
 import com.example.photoeditor.Tria2d
 import com.example.photoeditor.UsefulFuns.createColor
 import com.example.photoeditor.UsefulFuns.getBitmapFromAsset
 import com.example.photoeditor.vec2d
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.atan2
 
 class MainActivity : AppCompatActivity()
 {
@@ -50,8 +48,11 @@ class MainActivity : AppCompatActivity()
     private var oldY = 0.0f
     private var absAngleX = 0.0f
     private var absAngleY = 0.0f
-    private var ySign = 1
-    private var xSign = 1
+    private var absAngleZ = 0.0f
+
+    private var countOfFingers = 0
+    private var sign = 1
+    private lateinit var lastVec:vec2d
 
     private val newScene = Scene3D()
 
@@ -71,7 +72,7 @@ class MainActivity : AppCompatActivity()
         imageView = findViewById(R.id.imageToShow)
 
         imageView.viewTreeObserver.addOnGlobalLayoutListener {
-            initMesh()
+            //initMesh()
             //sampling()
         }
 
@@ -87,41 +88,75 @@ class MainActivity : AppCompatActivity()
             //}
 
             when (event.action) {
+
                 MotionEvent.ACTION_DOWN -> {
-                    println(oldX)
-                    oldX = event.x
-                    oldY = event.y
+
                 }
 
                 MotionEvent.ACTION_MOVE -> {
-                    //if(absAngleY){
-//
-                    //}
-                    absAngleY = (3.5f*(event.x - oldX)/imageView.width) * ySign
-                    absAngleX = -(3.5f*(event.y - oldY)/imageView.width) * xSign
-                    if (abs(absAngleX) > 6.283185f){
-                        absAngleX = 0.0f
+                    if (event.pointerCount == 1 && (countOfFingers == 0 || countOfFingers == 2)){
+                        countOfFingers = 1
+                        oldX = event.x
+                        oldY = event.y
                     }
-                    if (abs(absAngleY) > 6.283185f){
+                    if (event.pointerCount == 2 && (countOfFingers == 0 || countOfFingers == 1)){
+                        countOfFingers = 2
+                        lastVec = vec2d(abs(event.getX(0)-event.getX(1)),event.getY(0)-event.getY(1))
+                    }
+                    if (event.pointerCount == 1 && (countOfFingers == 1 || countOfFingers == 0)) {
+                        countOfFingers = 1
+                        absAngleY = (3.5f*(event.x - oldX)/imageView.width)
+                        absAngleX = -(3.5f*(event.y - oldY)/imageView.width)
+                        absAngleZ = 0.0f
+                        println(absAngleY)
+                        oldX = event.x
+                        oldY = event.y
+
+                        newScene.createRotationMatrix('y',absAngleY)
+                        newScene.createRotationMatrix('x',absAngleX)
+                        newScene.createRotationMatrix('z',absAngleZ)
+                        startSimulation()
+                    }
+
+                    if (event.pointerCount == 2) {
+                        countOfFingers = 2
+
+                        if (event.getX(0)-event.getX(1) <= 0.0f){
+                            sign = -1
+                        }else{
+                            sign = 1
+                        }
+                        val curVec = vec2d(abs(event.getX(0)-event.getX(1)),event.getY(0)-event.getY(1))
+                        val deltaAngle = sign*(atan2(curVec.x,curVec.y) - atan2(lastVec.x,lastVec.y))
+                        println(curVec.x)
+                        println(curVec.y)
+                        lastVec = curVec
+
                         absAngleY = 0.0f
+                        absAngleX = 0.0f
+                        absAngleZ = (deltaAngle*1000)/(imageView.width)
+                        newScene.createRotationMatrix('y',absAngleY)
+                        newScene.createRotationMatrix('x',absAngleX)
+                        newScene.createRotationMatrix('z',absAngleZ)
+                        startSimulation()
                     }
-                    println(absAngleY)
-                    oldX = event.x
-                    oldY = event.y
-                    newScene.createRotationMatrix('y',absAngleY)
-                    newScene.createRotationMatrix('x',absAngleX)
-                    startSimulation()
 
                 }
+                MotionEvent.ACTION_UP -> {
+
+                    countOfFingers=0
+                    println("fdfdfdfdfd")
+                }
             }
-            true
+
+        true
         }
 
     }
     fun sampling(){
         val textureBitmap = getBitmapFromAsset(this, "MLAATest.png")
 
-        imageView.setImageBitmap(MLAA(textureBitmap))
+        imageView.setImageBitmap(textureBitmap)
     }
     fun initMesh() {
         val textureBitmap = getBitmapFromAsset(this, "texture.png")

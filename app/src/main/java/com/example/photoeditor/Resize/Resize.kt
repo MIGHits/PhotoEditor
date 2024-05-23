@@ -3,6 +3,8 @@ package com.example.photoeditor.Resize
 import android.graphics.Bitmap
 import android.graphics.Color
 import com.example.photoeditor.SuperSampling.MLAA
+import com.example.photoeditor.UsefulFuns.createColor
+import com.example.photoeditor.vec2d
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -12,14 +14,19 @@ fun resize(sourceBitmap:Bitmap,resizeXScale:Double,resizeYScale:Double): Bitmap 
     if (resizeXScale + resizeYScale > 2.0){
         return bilinearInterpolation(sourceBitmap,resizeXScale,resizeYScale,newImgWidth,newImgHeight)
     }
-    if(resizeXScale + resizeYScale == 2.0){
+    if(resizeXScale ==1.0 && resizeYScale == 1.0){
         return sourceBitmap
     }
     return trilinearInterpolation(sourceBitmap,resizeXScale,resizeYScale,newImgWidth,newImgHeight)
 }
 private fun bilinearInterpolation(sourceBitmap:Bitmap,resizeXScale:Double,resizeYScale:Double,newImgWidth:Int,newImgHeight:Int): Bitmap {
     val resizedBitmap = Bitmap.createBitmap(newImgWidth, newImgHeight, Bitmap.Config.ARGB_8888)
-    //MLAA(sourceBitmap)
+
+    val pixels = IntArray(newImgWidth*newImgHeight)
+    resizedBitmap.getPixels(pixels,0,newImgWidth,0,0,newImgWidth,newImgHeight)
+
+    val smooth = MLAA()
+    val arr = ArrayList<vec2d>()
     for (y in 0 until newImgHeight) {
         for (x in 0 until newImgWidth) {
             val originalX = x / resizeXScale
@@ -38,13 +45,21 @@ private fun bilinearInterpolation(sourceBitmap:Bitmap,resizeXScale:Double,resize
 
             val newC1 = calculateMiddleInterpolation(px1,px2,dx)
             val newC2 = calculateMiddleInterpolation(px3,px4,dx)
-
-            resizedBitmap.setPixel(x, y, calculateMiddleInterpolation(newC1,newC2,dy))
+            if(smooth.comparePixel(sourceBitmap,x0,y0) || smooth.comparePixel(sourceBitmap,x0,y1)
+                || smooth.comparePixel(sourceBitmap,x1,y0) || smooth.comparePixel(sourceBitmap,x1,y1) ){
+                arr.add(vec2d(x.toFloat(),y.toFloat()))
+            }
+            pixels[x + y*newImgWidth] = calculateMiddleInterpolation(newC1,newC2,dy)
         }
     }
-    return MLAA(resizedBitmap)
+    for(i in 0..<arr.size){
+        smooth.smoothPixel(pixels,arr[i].x.toInt(),arr[i].y.toInt(),newImgWidth,newImgHeight)
+    }
+    resizedBitmap.setPixels(pixels, 0, newImgWidth, 0, 0, newImgWidth,newImgHeight)
+    return resizedBitmap
 }
 private fun trilinearInterpolation(sourceBitmap:Bitmap,resizeXScale:Double,resizeYScale:Double,newImgWidth:Int,newImgHeight:Int) : Bitmap {
+    //val sourceBitmap = MLAA(sourceBitmap1)
     var resizeFactor = 1.0
     while (resizeFactor > resizeXScale && resizeFactor > resizeYScale){
         resizeFactor *=  0.5

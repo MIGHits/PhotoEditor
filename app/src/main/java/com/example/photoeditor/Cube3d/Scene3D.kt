@@ -87,8 +87,6 @@ class Scene3D {
         image.getPixels(pixels,0,image.width,0,0,image.width,image.height)
 
         //Виды треугольников, которые получатся после преобразований по матрицам
-        var newMiddled:Tria3d
-        var newTriaRotatedY:Tria3d
         var newTriaRotatedX:Tria3d
         var newTriaInCameraFOV:Tria3d
         //Линии для нахождения нормалей
@@ -98,6 +96,7 @@ class Scene3D {
         for (i in 0..<mesh.tris.size){
 
             //mesh.tris[i] = applyTransformMatrixToTria(mesh.tris[i],midCorrection)
+            mesh.tris[i] = applyTransformMatrixToTria(mesh.tris[i],matZRot)
             mesh.tris[i] = applyTransformMatrixToTria(mesh.tris[i],matYRot)
             mesh.tris[i] = applyTransformMatrixToTria(mesh.tris[i],matXRot)
             newTriaRotatedX = applyTransformMatrixToTria(mesh.tris[i],identityMatrix)
