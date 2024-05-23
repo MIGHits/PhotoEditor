@@ -2,11 +2,8 @@ package com.example.photoeditor.UsefulFuns
 
 import com.example.photoeditor.Cube3d.mat4x4
 import com.example.photoeditor.Cube3d.vec3d
-import com.example.photoeditor.vec2d
-import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 

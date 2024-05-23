@@ -2,7 +2,6 @@ package com.example.photoeditor.AffineTransform
 
 import android.graphics.Bitmap
 import com.example.photoeditor.Cube3d.Tria3d
-import com.example.photoeditor.Tria2d
 import kotlinx.coroutines.*
 import kotlin.math.max
 import kotlin.math.min
@@ -42,7 +41,7 @@ class AffineTransform(origTriangle: Tria3d) {
     private var coefEquation3 = y2Coef * x1Coef - y1Coef * x2Coef
     private var coefEquation4 = x1Coef * y2Coef - x2Coef * y1Coef
     //Функция преобразования всего изображения по преобразованиям двух треугольников
-    suspend fun process(sourceBitmap:Bitmap):Bitmap = coroutineScope{
+    fun process(sourceBitmap:Bitmap):Bitmap{
 
         val changedBitmap = Bitmap.createBitmap(sourceBitmap.width, sourceBitmap.height, Bitmap.Config.ARGB_8888)
         val newPixels = IntArray(sourceBitmap.width*sourceBitmap.height)
@@ -69,7 +68,7 @@ class AffineTransform(origTriangle: Tria3d) {
 
         changedBitmap.setPixels(newPixels, 0, sourceBitmap.width, 0, 0, sourceBitmap.width, sourceBitmap.height)
 
-        changedBitmap
+        return changedBitmap
     }
     public fun oldPos(x:Int,y:Int):Array<Float>{
         return arrayOf((y2Coef * x - y1Coef * y + coefEquation1) / (coefEquation3)

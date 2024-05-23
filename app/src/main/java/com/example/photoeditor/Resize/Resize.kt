@@ -3,7 +3,6 @@ package com.example.photoeditor.Resize
 import android.graphics.Bitmap
 import android.graphics.Color
 import com.example.photoeditor.SuperSampling.MLAA
-import com.example.photoeditor.UsefulFuns.createColor
 import com.example.photoeditor.vec2d
 import kotlin.math.ceil
 import kotlin.math.floor
