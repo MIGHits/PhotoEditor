@@ -5,7 +5,7 @@
     </style>
 
     <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowBackground">@color/white</item>
-        <item name="android:src">@drawable/hits</item>
+        <item name="android:windowBackground">@color/cardview_dark_background</item>
+        
     </style>
 </resources>

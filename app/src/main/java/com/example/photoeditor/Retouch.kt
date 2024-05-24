@@ -19,13 +19,12 @@ class Retouch {
             val drawable = drawable as? BitmapDrawable
             val bitmap = drawable!!.bitmap
             val mutableBitmap = bitmap!!.copy(Bitmap.Config.ARGB_8888, true)
-
             setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_MOVE) {
                     val x = (bitmap!!.width * (event.x) / imageView.width).toInt()
                     val y = (bitmap.height * (event.y) / imageView.height).toInt()
 
-                        CoroutineScope(Dispatchers.Main).launch {
+                    CoroutineScope(Dispatchers.Main).launch {
                             val retouchedBitmap = RetouchFilter(
                                 mutableBitmap,
                                 brushRadius,
