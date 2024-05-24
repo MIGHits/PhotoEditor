@@ -279,8 +279,7 @@ class DetectingActivity : AppCompatActivity(), CoroutineScope {
             // Загрузка каскада Хаара
             withContext(Dispatchers.IO) {
                 val inputStream = resources.openRawResource(R.raw.haarcascade_frontalface_alt)
-                val cascadeDir = applicationContext.getDir("cascade", Context.MODE_PRIVATE)
-                val cascadeFile = File(cascadeDir, "haarcascade_frontalface_alt.xml")
+                val cascadeFile = File.createTempFile("cascade", ".xml")
                 val outputStream = FileOutputStream(cascadeFile)
 
                 val buffer = ByteArray(4096)
