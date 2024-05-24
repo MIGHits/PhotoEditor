@@ -32,6 +32,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="com.example.myapplication.MainActivity"
             android:exported="true"
@@ -44,7 +45,9 @@
         <activity
             android:name="com.example.photoeditor.Cube3d.CubeActivity"
             android:exported="true" />
-
+        <activity android:name=".SplineActivity"
+            android:exported="true"
+            />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
