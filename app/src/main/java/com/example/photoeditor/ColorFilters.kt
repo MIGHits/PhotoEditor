@@ -20,30 +20,42 @@ class ColorFilters {
             val width = source.width
             val height = source.height
             val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
-                        val red = Color.red(color)
-                        val green = Color.green(color)
-                        val blue = Color.blue(color)
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
 
-                        val r = (red + brightnessValue).coerceAtMost(255)
-                        val g = (green + brightnessValue).coerceAtMost(255)
-                        val b = (blue + brightnessValue).coerceAtMost(255)
+                                val red = Color.red(pixel)
+                                val green = Color.green(pixel)
+                                val blue = Color.blue(pixel)
 
-                        val newColor = Color.rgb(r, g, b)
+                                val r = (red + brightnessValue).coerceAtMost(255)
+                                val g = (green + brightnessValue).coerceAtMost(255)
+                                val b = (blue + brightnessValue).coerceAtMost(255)
 
-                        pixels[index] = newColor
+                                val newColor = Color.rgb(r, g, b)
+
+                                resultPixels[y * width + x] = newColor
+                            }
+                        }
                     }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
                 }
+
+                deferredResults.forEach { it.await() }
             }
 
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
             return resultBitmap
         }
 
@@ -51,30 +63,42 @@ class ColorFilters {
             val width = source.width
             val height = source.height
             val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
-                        val red = Color.red(color)
-                        val green = Color.green(color)
-                        val blue = Color.blue(color)
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
 
-                        val r = 255 - red
-                        val g = 255 - green
-                        val b = 255 - blue
+                                val red = Color.red(pixel)
+                                val green = Color.green(pixel)
+                                val blue = Color.blue(pixel)
 
-                        val newColor = Color.rgb(r, g, b)
+                                val r = 255 - red
+                                val g = 255 - green
+                                val b = 255 - blue
 
-                        pixels[index] = newColor
+                                val newColor = Color.rgb(r, g, b)
+
+                                resultPixels[y * width + x] = newColor
+                            }
+                        }
                     }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
                 }
+
+                deferredResults.forEach { it.await() }
             }
 
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
             return resultBitmap
         }
 
@@ -82,23 +106,34 @@ class ColorFilters {
             val width = source.width
             val height = source.height
             val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
 
-                        val newColor = Color.rgb(Color.red(color), 0, 0)
+                                val newColor = Color.rgb(Color.red(pixel), 0, 0)
 
-                        pixels[index] = newColor
+                                resultPixels[y * width + x] = newColor
+                            }
+                        }
                     }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
                 }
+
+                deferredResults.forEach { it.await() }
             }
 
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
             return resultBitmap
         }
 
@@ -106,23 +141,34 @@ class ColorFilters {
             val width = source.width
             val height = source.height
             val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
 
-                        val newColor = Color.rgb(0, Color.green(color), 0)
+                                val newColor = Color.rgb(0, Color.green(pixel), 0)
 
-                        pixels[index] = newColor
+                                resultPixels[y * width + x] = newColor
+                            }
+                        }
                     }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
                 }
+
+                deferredResults.forEach { it.await() }
             }
 
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
             return resultBitmap
         }
 
@@ -130,23 +176,34 @@ class ColorFilters {
             val width = source.width
             val height = source.height
             val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
 
-                        val newColor = Color.rgb(0, 0, Color.blue(color))
+                                val newColor = Color.rgb(0, 0, Color.blue(pixel))
 
-                        pixels[index] = newColor
+                                resultPixels[y * width + x] = newColor
+                            }
+                        }
                     }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
                 }
+
+                deferredResults.forEach { it.await() }
             }
 
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
             return resultBitmap
         }
 
@@ -154,61 +211,42 @@ class ColorFilters {
             val width = source.width
             val height = source.height
             val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
-                        val red = Color.red(color)
-                        val green = Color.green(color)
-                        val blue = Color.blue(color)
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
 
-                        val r = (red + green + blue) / 3
-                        val g = (red + green + blue) / 3
-                        val b = (red + green + blue) / 3
+                                val red = Color.red(pixel)
+                                val green = Color.green(pixel)
+                                val blue = Color.blue(pixel)
 
-                        val newColor = Color.rgb(r, g, b)
+                                val r = (red + green + blue) / 3
+                                val g = (red + green + blue) / 3
+                                val b = (red + green + blue) / 3
 
-                        pixels[index] = newColor
+                                val newColor = Color.rgb(r, g, b)
+
+                                resultPixels[y * width + x] = newColor
+                            }
+                        }
                     }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
                 }
+
+                deferredResults.forEach { it.await() }
             }
 
-            return resultBitmap
-        }
-
-        suspend fun blackout(source: Bitmap, blackoutValue: Int): Bitmap {
-            val width = source.width
-            val height = source.height
-            val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
-
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
-                        val red = Color.red(color)
-                        val green = Color.green(color)
-                        val blue = Color.blue(color)
-
-                        val r = (red + green + blue) / (blackoutValue + 3)
-                        val g = (red + green + blue) / (blackoutValue + 3)
-                        val b = (red + green + blue) / (blackoutValue + 3)
-
-                        val newColor = Color.rgb(r, g, b)
-
-                        pixels[index] = newColor
-                    }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
-                }
-            }
-
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
             return resultBitmap
         }
 
@@ -270,30 +308,41 @@ class ColorFilters {
             val width = source.width
             val height = source.height
             val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
-                        val red = Color.red(color)
-                        val green = Color.green(color)
-                        val blue = Color.blue(color)
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
 
-                        val r = (0.393 * red + 0.769 * green + 0.189 * blue).toInt().coerceAtMost(255)
-                        val g = (0.349 * red + 0.686 * green + 0.168 * blue).toInt().coerceAtMost(255)
-                        val b = (0.272 * red + 0.534 * green + 0.131 * blue).toInt().coerceAtMost(255)
+                                val red = Color.red(pixel)
+                                val green = Color.green(pixel)
+                                val blue = Color.blue(pixel)
 
-                        val newColor = Color.rgb(r, g, b)
+                                val r = (0.393 * red + 0.769 * green + 0.189 * blue).toInt().coerceAtMost(255)
+                                val g = (0.349 * red + 0.686 * green + 0.168 * blue).toInt().coerceAtMost(255)
+                                val b = (0.272 * red + 0.534 * green + 0.131 * blue).toInt().coerceAtMost(255)
 
-                        pixels[index] = newColor
+                                val newColor = Color.rgb(r, g, b)
+                                resultPixels[y * width + x] = newColor
+                            }
+                        }
                     }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
                 }
+
+                deferredResults.forEach { it.await() }
             }
 
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
             return resultBitmap
         }
 
@@ -301,42 +350,54 @@ class ColorFilters {
             val width = source.width
             val height = source.height
             val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
             val contrast = ((100 + alpha) / 100.0)*((100 + alpha) / 100.0)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
-                        val red = Color.red(color)
-                        val green = Color.green(color)
-                        val blue = Color.blue(color)
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
 
-                        val colors = mutableListOf(red.toDouble(), green.toDouble(), blue.toDouble())
+                                val red = Color.red(pixel)
+                                val green = Color.green(pixel)
+                                val blue = Color.blue(pixel)
 
-                        for (i in 0 until colors.size)
-                        {
-                            colors[i] /= 255
-                            colors[i] -= 0.5
-                            colors[i] *= contrast
-                            colors[i] += 0.5
-                            colors[i] *= 255
+                                val colors = mutableListOf(red.toDouble(), green.toDouble(), blue.toDouble())
+
+                                for (i in 0 until colors.size)
+                                {
+                                    colors[i] /= 255
+                                    colors[i] -= 0.5
+                                    colors[i] *= contrast
+                                    colors[i] += 0.5
+                                    colors[i] *= 255
+                                }
+
+                                val r = colors[0].toInt().coerceAtMost(255)
+                                val g = colors[1].toInt().coerceAtMost(255)
+                                val b = colors[2].toInt().coerceAtMost(255)
+
+                                val newColor = Color.rgb(r, g, b)
+
+                                resultPixels[y * width + x] = newColor
+                            }
                         }
-
-                        val r = colors[0].toInt().coerceAtMost(255)
-                        val g = colors[1].toInt().coerceAtMost(255)
-                        val b = colors[2].toInt().coerceAtMost(255)
-
-                        val newColor = Color.rgb(r, g, b)
-
-                        pixels[index] = newColor
                     }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
                 }
+
+                deferredResults.forEach { it.await() }
             }
 
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
             return resultBitmap
         }
 
