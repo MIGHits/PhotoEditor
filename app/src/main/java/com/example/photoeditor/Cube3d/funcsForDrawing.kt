@@ -21,21 +21,7 @@ fun isPointInTriangle(x:Int,y:Int, triangle: Tria3d):Boolean{
     val cSide = (c.x - x) * (a.y - c.y) - (a.x - c.x) * (c.y - y)
     return (aSide >= 0 && bSide >= 0 && cSide >= 0 ) || (aSide < 0 && bSide < 0 && cSide < 0)
 }
-//withContext(Dispatchers.Default) {
-//    val numCores = Runtime.getRuntime().availableProcessors()
-//    val chunkSize = ceil(mesh.tris.size.toDouble() / numCores).toInt()
-//
-//    val deferredResults = (0 until numCores).map { core ->
-//        async {
-//            val startTris = core * chunkSize
-//            val endTris = minOf(startTris + chunkSize, mesh.tris.size)
-//
-//
-//
-//        }
-//    }
-//    deferredResults.forEach { it.await() }
-//}
+
 fun findBox2D(tris: Tria3d, width:Int, height:Int):Box2D{
     val result = Box2D(
         vec3d(max(findMin3(tris.p[0].x,tris.p[1].x,tris.p[2].x),0.0f),
