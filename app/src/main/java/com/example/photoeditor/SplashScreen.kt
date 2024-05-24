@@ -18,9 +18,7 @@ class SplashScreen : AppCompatActivity() {
         setContentView(R.layout.splash_screen)
 
         Handler(Looper.getMainLooper()).postDelayed({
-            // После задержки переходим на MainActivity
             startActivity(Intent(this, MainActivity::class.java))
-            // Закрываем эту активность
             finish()
         }, SPLASH_TIME_OUT)
     }

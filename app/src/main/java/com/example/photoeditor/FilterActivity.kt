@@ -612,7 +612,6 @@ class FilterActivity: AppCompatActivity() {
                                     acceptButton.visibility = View.VISIBLE
                                     declineButton.visibility = View.VISIBLE
                                 }
-
                             }
                         }
                     }

@@ -9,9 +9,10 @@
 
     <ImageView
         android:id="@+id/customer_image"
-        android:layout_width="350dp"
+        android:layout_width="wrap_content"
         android:layout_height="500dp"
         android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.491"
@@ -32,8 +33,10 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/effectsMenu"
         app:layout_constraintEnd_toStartOf="@+id/rotationBar"
+        app:layout_constraintHorizontal_bias="0.157"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/customer_image" />
+        app:layout_constraintTop_toBottomOf="@+id/customer_image"
+        app:layout_constraintVertical_bias="0.263" />
 
     <ImageButton
         android:id="@+id/accept"
@@ -42,17 +45,18 @@
         android:layout_marginTop="10dp"
         android:background="@null"
         android:scaleType="centerCrop"
-        android:visibility="invisible"
         android:src="@drawable/check"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/effectsMenu"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.46"
+        app:layout_constraintHorizontal_bias="0.789"
         app:layout_constraintStart_toEndOf="@+id/rotationBar"
-        app:layout_constraintTop_toBottomOf="@+id/customer_image" />
+        app:layout_constraintTop_toBottomOf="@+id/customer_image"
+        app:layout_constraintVertical_bias="0.263" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -63,15 +67,15 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/effectsMenu"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="120dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/rotationDegree"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.9" />
 
     <ImageButton
         android:id="@+id/backButton"
@@ -156,6 +160,7 @@
         android:layout_height="60dp"
         android:layout_marginTop="8dp"
         android:adjustViewBounds="true"
+        android:src="@drawable/triangle"
         android:background="@drawable/item_background"
         android:scaleType="fitCenter"
         android:visibility="invisible"
@@ -206,6 +211,7 @@
         android:layout_height="60dp"
         android:layout_marginTop="8dp"
         android:adjustViewBounds="true"
+        android:src="@drawable/triangle"
         android:visibility="invisible"
         android:background="@drawable/item_background"
         android:scaleType="fitCenter"
@@ -240,6 +246,7 @@
         android:visibility="invisible"
         android:layout_marginTop="8dp"
         android:adjustViewBounds="true"
+        android:src="@drawable/start"
         android:background="@drawable/item_background"
         android:scaleType="fitCenter"
         app:layout_constraintEnd_toStartOf="@+id/secondTriangle"

@@ -8,61 +8,38 @@ import android.view.MotionEvent
 import android.widget.ImageView
 import kotlinx.coroutines.*
 import kotlin.math.*
-import java.util.concurrent.atomic.AtomicInteger
 
-data class Point(var x:Int, var y:Int);
+data class Point(var x: Int, var y: Int)
 
 class Retouch {
     companion object {
 
-        @SuppressLint("ClickableViewAccessibility")
-        fun ImageView.setRetouchable(brushRadius: Int, retouchCoeff: Double,imageView: ImageView) {
+        @SuppressLint("ClickableViewAccessibility", "SuspiciousIndentation")
+        fun ImageView.setRetouchable(brushRadius: Int, retouchCoeff: Double,imageView:ImageView) {
+            val drawable = drawable as? BitmapDrawable
+            val bitmap = drawable!!.bitmap
+            val mutableBitmap = bitmap!!.copy(Bitmap.Config.ARGB_8888, true)
+
             setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_MOVE) {
-                    val drawable = drawable as? BitmapDrawable ?: return@setOnTouchListener false
-                    val bitmap = drawable.bitmap ?: return@setOnTouchListener false
+                    val x = (bitmap!!.width * (event.x) / imageView.width).toInt()
+                    val y = (bitmap.height * (event.y) / imageView.height).toInt()
 
-                    val intrinsicWidth = drawable.intrinsicWidth
-                    val intrinsicHeight = drawable.intrinsicHeight
-
-
-                    val imageViewWidth = width
-                    val imageViewHeight = height
-
-
-                    val scaleX = intrinsicWidth.toFloat() / imageViewWidth
-                    val scaleY = intrinsicHeight.toFloat() / imageViewHeight
-
-
-                    val scaledTouchX = event.x * scaleX
-                    val scaledTouchY = event.y * scaleY
-
-
-                    val paddingLeft = (imageViewWidth - intrinsicWidth / scaleX) / 2
-                    val paddingTop = (imageViewHeight - intrinsicHeight / scaleY) / 2
-
-
-                    val centerX = (scaledTouchX - paddingLeft).toInt()
-                    val centerY = (scaledTouchY - paddingTop).toInt()
-
-                    if (centerX in 0 until intrinsicWidth && centerY in 0 until intrinsicHeight) {
                         CoroutineScope(Dispatchers.Main).launch {
-                            val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
                             val retouchedBitmap = RetouchFilter(
                                 mutableBitmap,
                                 brushRadius,
-                                centerX,
-                                centerY,
+                                x,
+                                y,
                                 retouchCoeff
                             )
                             setImageBitmap(retouchedBitmap)
                         }
-                    }
+
                 }
                 true
             }
         }
-
 
         suspend fun RetouchFilter(
             bitmap: Bitmap,
@@ -90,12 +67,10 @@ class Retouch {
             val sigma = brushRadius / 3.0
             val twoSigmaSquared = 2 * sigma * sigma
 
-            // Precompute weights for Gaussian fall-off
             val precomputedWeights = FloatArray(brushRadius + 1) { r ->
                 exp(-r * r / twoSigmaSquared).toFloat()
             }
 
-            // Calculate the average color within the brush radius using Gaussian weights
             fun calculateAverageColor() {
                 for (y in rectLeftTop.y until rectRightBot.y) {
                     for (x in rectLeftTop.x until rectRightBot.x) {
@@ -116,7 +91,6 @@ class Retouch {
                 }
             }
 
-            // Apply the retouch effect
             suspend fun applyRetouchEffect(avgRed: Int, avgGreen: Int, avgBlue: Int, avgAlpha: Int) {
                 coroutineScope {
                     val numCores = Runtime.getRuntime().availableProcessors()
@@ -149,7 +123,6 @@ class Retouch {
                 }
             }
 
-            // Calculate average color
             calculateAverageColor()
 
             val avgRed = (totalRed[0] / totalWeight[0]).toInt()
@@ -157,14 +130,10 @@ class Retouch {
             val avgBlue = (totalBlue[0] / totalWeight[0]).toInt()
             val avgAlpha = (totalAlpha[0] / totalWeight[0]).toInt()
 
-            // Apply retouch effect
             applyRetouchEffect(avgRed, avgGreen, avgBlue, avgAlpha)
 
-            // Set pixels back to bitmap
             bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
             bitmap
         }
     }
-
-
 }
