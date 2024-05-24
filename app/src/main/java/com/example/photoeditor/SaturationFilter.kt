@@ -2,15 +2,55 @@ package com.example.photoeditor
 
 import android.graphics.Bitmap
 import android.graphics.Color
-import androidx.core.graphics.ColorUtils.HSLToColor
-import androidx.core.graphics.ColorUtils.RGBToHSL
 import kotlinx.coroutines.*
-import java.nio.ByteBuffer
 import kotlin.math.*
 
 class SaturationFilter {
     companion object {
-        fun RGBToHSL(red: Int, green: Int, blue: Int, hsl: FloatArray) {
+        suspend fun saturation(source: Bitmap, saturationFactor: Float): Bitmap {
+            val width = source.width
+            val height = source.height
+            val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val pixels = IntArray(width * height)
+            val resultPixels = IntArray(width * height)
+            source.getPixels(pixels, 0, width, 0, 0, width, height)
+
+            withContext(Dispatchers.Default) {
+                val numCores = Runtime.getRuntime().availableProcessors()
+                val chunkSize = ceil(height.toDouble() / numCores).toInt()
+
+                val deferredResults = (0 until numCores).map { core ->
+                    async {
+                        val startY = core * chunkSize
+                        val endY = minOf(startY + chunkSize, height)
+                        for (y in startY until endY) {
+                            for (x in 0 until width) {
+                                val pixel = pixels[y * width + x]
+
+                                val hsl = FloatArray(3)
+                                val r = Color.red(pixel)
+                                val g = Color.green(pixel)
+                                val b = Color.blue(pixel)
+
+                                rgbToHSL(r, g, b, hsl)
+
+                                hsl[1] = (hsl[1] * saturationFactor).coerceAtMost(1f)
+
+                                val newColor = hslToRGB(hsl[0], hsl[1], hsl[2])
+                                resultPixels[y * width + x] = newColor
+                            }
+                        }
+                    }
+                }
+
+                deferredResults.forEach { it.await() }
+            }
+
+            resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
+            return resultBitmap
+        }
+
+        fun rgbToHSL(red: Int, green: Int, blue: Int, hsl: FloatArray) {
             val r = red / 255f
             val g = green / 255f
             val b = blue / 255f
@@ -42,10 +82,10 @@ class SaturationFilter {
             hsl[2] = l
         }
 
-        fun HSLToColor(h: Float, s: Float, l: Float): Int {
-            var r : Float
-            var g : Float
-            var b : Float
+        fun hslToRGB(h: Float, s: Float, l: Float): Int {
+            val r : Float
+            val g : Float
+            val b : Float
 
             val c = (1 - abs(2*l - 1)) * s
             val x = c * (1 - abs((h / 60) % 2 - 1))
@@ -63,37 +103,6 @@ class SaturationFilter {
             val blue = ((b + m) * 255).toInt().coerceIn(0, 255)
 
             return Color.rgb(red, green, blue)
-        }
-        suspend fun saturation(source: Bitmap, saturationFactor: Float): Bitmap {
-            val width = source.width
-            val height = source.height
-            val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-
-            coroutineScope {
-                val pixels = IntArray(width * height)
-                source.getPixels(pixels, 0, width, 0, 0, width, height)
-
-                launch(Dispatchers.Default) {
-                    pixels.forEachIndexed { index, color ->
-                        val hsl = FloatArray(3)
-                        val r = Color.red(color)
-                        val g = Color.green(color)
-                        val b = Color.blue(color)
-
-                        RGBToHSL(r, g, b, hsl)
-
-                        hsl[1] = (hsl[1] * saturationFactor).coerceAtMost(1f)
-
-                        val newColor = HSLToColor(hsl[0], hsl[1], hsl[2])
-
-                        pixels[index] = newColor
-                    }
-
-                    resultBitmap.setPixels(pixels, 0, width, 0, 0, width, height)
-                }
-            }
-
-            return resultBitmap
         }
     }
 }
