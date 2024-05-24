@@ -101,14 +101,12 @@ class SplineActivity : AppCompatActivity() {
             if (isRemovingEnabled) {
                 Toast.makeText(this, "Сейчас Вы не можете перемещать точки", Toast.LENGTH_SHORT)
                     .show()
-            }
-            else {
+            } else {
                 if (isMovingEnabled) {
                     isMovingEnabled = false
                     Toast.makeText(this, "Выключен режим перемещения точек", Toast.LENGTH_SHORT)
                         .show()
-                }
-                else {
+                } else {
                     isMovingEnabled = true
                     Toast.makeText(this, "Включен режим перемещения точек", Toast.LENGTH_SHORT)
                         .show()
@@ -169,7 +167,8 @@ class SplineActivity : AppCompatActivity() {
                         var count = 0
                         for (pixel in neighbours) {
                             if (Color.red(pixel) != 221 && Color.green(pixel) != 221 &&
-                                Color.blue(pixel) != 221) count++
+                                Color.blue(pixel) != 221
+                            ) count++
                         }
                         if (count == 0) {
                             resultPixels[y * width + x] = pixels[y * width + x]
@@ -188,7 +187,13 @@ class SplineActivity : AppCompatActivity() {
         resultBitmap
     }
 
-    private fun getNeighbours(pixels: IntArray, x: Int, y: Int, width: Int, height: Int): List<Int> {
+    private fun getNeighbours(
+        pixels: IntArray,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    ): List<Int> {
         val neighbors = mutableListOf<Int>()
 
         for (j in (y - 1)..(y + 1)) {
