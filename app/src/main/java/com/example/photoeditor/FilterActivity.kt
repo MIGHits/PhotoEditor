@@ -573,9 +573,9 @@ class FilterActivity: AppCompatActivity() {
                             initializeSeekBar(5,100,50)
                             barProgress.text = filterBar.progress.toString()
 
-                            retouchBar.min = 100
-                            retouchBar.max = 200
-                            retouchBar.progress = 100
+                            retouchBar.min = 50
+                            retouchBar.max = 100
+                            retouchBar.progress = 50
                             retouchBarProgress.text = (retouchBar.progress/100.0).toString()
 
                             retouchBar.visibility = View.VISIBLE
