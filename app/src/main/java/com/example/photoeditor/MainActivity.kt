@@ -25,6 +25,7 @@ import androidx.core.content.FileProvider
 import com.example.photoeditor.Cube3d.CubeActivity
 import com.example.photoeditor.FilterActivity
 import com.example.photoeditor.R
+import com.example.photoeditor.SplineActivity
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -41,12 +42,13 @@ class MainActivity : AppCompatActivity()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        window.setStatusBarColor(Color.parseColor("#5e6666"));
-        window.setNavigationBarColor(Color.parseColor("#5e6666"));
+        window.setStatusBarColor(Color.parseColor("#5e6666"))
+        window.setNavigationBarColor(Color.parseColor("#5e6666"))
+        var intent:Intent
         val photoPickButton = findViewById<ImageButton>(R.id.galleryButton)
         val cameraButton =  findViewById<ImageButton>(R.id.cameraButton)
         val cubeButton = findViewById<ImageButton>(R.id.cubeButton)
-
+        val splineButton = findViewById<ImageButton>(R.id.splineButton)
         cameraButton.setOnClickListener{
 
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -89,8 +91,12 @@ class MainActivity : AppCompatActivity()
         }
 
         cubeButton.setOnClickListener{
-            var intent:Intent
             intent = Intent(this, CubeActivity::class.java)
+            startActivity(intent)
+        }
+
+        splineButton.setOnClickListener{
+            intent = Intent(this,SplineActivity::class.java)
             startActivity(intent)
         }
     }

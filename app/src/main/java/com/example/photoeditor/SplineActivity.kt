@@ -21,7 +21,7 @@ import androidx.lifecycle.lifecycleScope
 var isRemovingEnabled = false
 var isMovingEnabled = false
 
-class MainActivity : AppCompatActivity() {
+class SplineActivity : AppCompatActivity() {
 
     private lateinit var drawingView: DrawingView
     private lateinit var splineButton: ImageButton
