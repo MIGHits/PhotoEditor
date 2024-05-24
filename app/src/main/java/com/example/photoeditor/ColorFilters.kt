@@ -3,6 +3,7 @@ package com.example.photoeditor
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Color.alpha
+import androidx.core.content.contentValuesOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -36,6 +37,10 @@ class ColorFilters {
                         for (y in startY until endY) {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
+
+                                if (alpha(pixel) == 0){
+                                    continue
+                                }
 
                                 val red = Color.red(pixel)
                                 val green = Color.green(pixel)
@@ -80,6 +85,10 @@ class ColorFilters {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
 
+                                if (alpha(pixel) == 0){
+                                    continue
+                                }
+
                                 val red = Color.red(pixel)
                                 val green = Color.green(pixel)
                                 val blue = Color.blue(pixel)
@@ -123,6 +132,10 @@ class ColorFilters {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
 
+                                if (alpha(pixel) == 0){
+                                    continue
+                                }
+
                                 val newColor = Color.rgb(Color.red(pixel), 0, 0)
 
                                 resultPixels[y * width + x] = newColor
@@ -157,6 +170,10 @@ class ColorFilters {
                         for (y in startY until endY) {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
+
+                                if (alpha(pixel) == 0){
+                                    continue
+                                }
 
                                 val newColor = Color.rgb(0, Color.green(pixel), 0)
 
@@ -193,6 +210,10 @@ class ColorFilters {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
 
+                                if (alpha(pixel) == 0){
+                                    continue
+                                }
+
                                 val newColor = Color.rgb(0, 0, Color.blue(pixel))
 
                                 resultPixels[y * width + x] = newColor
@@ -227,6 +248,10 @@ class ColorFilters {
                         for (y in startY until endY) {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
+
+                                if (alpha(pixel) == 0){
+                                    continue
+                                }
 
                                 val red = Color.red(pixel)
                                 val green = Color.green(pixel)
@@ -270,8 +295,12 @@ class ColorFilters {
                                 for (n in 0 until blockSize) {
                                     val x = i + k
                                     val y = j + n
+
                                     if (x < width && y < height) {
                                         val pixel = pixels[y * width + x]
+                                        if (alpha(pixel) == 0){
+                                            continue
+                                        }
                                         colors[0] += Color.red(pixel)
                                         colors[1] += Color.green(pixel)
                                         colors[2] += Color.blue(pixel)
@@ -279,7 +308,9 @@ class ColorFilters {
                                     }
                                 }
                             }
-
+                            if (count == 0){
+                                continue
+                            }
                             val meanColor = Color.rgb(
                                 colors[0] / count,
                                 colors[1] / count,
@@ -325,6 +356,10 @@ class ColorFilters {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
 
+                                if (alpha(pixel) == 0){
+                                    continue
+                                }
+
                                 val red = Color.red(pixel)
                                 val green = Color.green(pixel)
                                 val blue = Color.blue(pixel)
@@ -367,6 +402,10 @@ class ColorFilters {
                         for (y in startY until endY) {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
+
+                                if (alpha(pixel) == 0){
+                                    continue
+                                }
 
                                 val red = Color.red(pixel)
                                 val green = Color.green(pixel)
@@ -447,6 +486,7 @@ class ColorFilters {
                                 var green = 0.0
                                 var blue = 0.0
                                 var alpha = 0.0
+
                                 if (alpha(pixels[y * width + x]) == 0){
                                     continue
                                 }
@@ -499,6 +539,9 @@ class ColorFilters {
 
             for (i in pixels.indices) {
                 val pixelMinuend = pixels[i]
+                if (alpha(pixelMinuend)==0){
+                    continue
+                }
                 val pixelSubtrahend = gaussianPixels[i]
 
                 val red = (Color.red(pixelMinuend) - Color.red(pixelSubtrahend)) * amount

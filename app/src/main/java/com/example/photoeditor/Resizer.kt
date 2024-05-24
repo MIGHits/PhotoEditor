@@ -5,6 +5,8 @@ import android.graphics.Color
 import com.example.photoeditor.SuperSampling.GausBlur
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -14,28 +16,40 @@ class Resizer {
 
         suspend fun resize(sourceBitmap:Bitmap,resizeXScale:Double,resizeYScale:Double): Bitmap = withContext(Dispatchers.Default){
 
-            val newImgWidth:Int = (sourceBitmap.width * resizeXScale).toInt()
+            //Вычисление будущего размера
+            val newImgWidth = (sourceBitmap.width * resizeXScale).toInt()
             val newImgHeight = (sourceBitmap.height * resizeYScale).toInt()
 
+            //Если изображение в основном увеличивается, то применяю билинейную интерполяцию
             if (resizeXScale + resizeYScale > 2.0){
                 bilinearInterpolation(sourceBitmap,resizeXScale,resizeYScale,newImgWidth,newImgHeight)
             }
+
+            //Если изображение осталось с текущим размером, то возвращаю текущее изображение
             if(resizeXScale ==1.0 && resizeYScale == 1.0){
                 sourceBitmap
             }
+
+            //Если изображение в основном уменьшается, то применяю трилинейную интерполяцию
             trilinearInterpolation(sourceBitmap,resizeXScale,resizeYScale,newImgWidth,newImgHeight)
         }
+
         private suspend fun bilinearInterpolation(sourceBitmap:Bitmap,resizeXScale:Double,resizeYScale:Double,newImgWidth:Int,newImgHeight:Int): Bitmap {
 
+            //Перевожу исходную bitmap в intArray для ускорения получения значения пикселя
             val sourceImage = IntArray(sourceBitmap.width*sourceBitmap.height)
             sourceBitmap.getPixels(sourceImage,0,sourceBitmap.width,0,0,sourceBitmap.width,sourceBitmap.height)
 
+            //Создаю IntArray с новыми размерами, в который будут записаны новые значения пикселей
             val pixels = IntArray(newImgWidth*newImgHeight)
 
-            val resizedBitmap = Bitmap.createBitmap(newImgWidth, newImgHeight, Bitmap.Config.ARGB_8888)
-            val smooth = GausBlur()
-            val arr = ArrayList<vec2d>()
+            //Инициализация ядра размытия по гауссу
+            val smooth = GausBlur(1)
 
+            //Создание массива, в котором будут хринтся координаты точек, которые нужно сгладить
+            val pointsToSmooth = ArrayList<vec2d>()
+
+            val mutex = Mutex()
             withContext(Dispatchers.Default) {
                 val numCores = Runtime.getRuntime().availableProcessors()
                 val chunkSize = ceil(newImgHeight.toDouble() / numCores).toInt()
@@ -46,12 +60,16 @@ class Resizer {
                         val endY = minOf(startY + chunkSize, newImgHeight)
                         for (y in startY..<endY) {
                             for (x in 0 until newImgWidth) {
+
+                                //Вычисления координат текущей точки из прошлого изображения
                                 val originalX = x / resizeXScale
                                 val originalY = y / resizeYScale
                                 val x0 = floor(originalX).toInt().coerceIn(0, sourceBitmap.width - 1)
                                 val y0 = floor(originalY).toInt().coerceIn(0, sourceBitmap.height - 1)
                                 val x1 = ceil(originalX).toInt().coerceIn(0, sourceBitmap.width - 1)
                                 val y1 = ceil(originalY).toInt().coerceIn(0, sourceBitmap.height - 1)
+
+                                //Коэффициенты влияния пикселей
                                 val dx = originalX - x0
                                 val dy = originalY - y0
 
@@ -60,12 +78,17 @@ class Resizer {
                                 val px3 = sourceImage[x1 + y0 * sourceBitmap.width]
                                 val px4 = sourceImage[x1 + y1 * sourceBitmap.width]
 
+                                //Если пиксель граничный, то его нужно сгладить
+                                if(smooth.checkPixelForDifference(sourceImage,x0,y0,sourceBitmap.width,sourceBitmap.height) || smooth.checkPixelForDifference(sourceImage,x0,y1,sourceBitmap.width,sourceBitmap.height)
+                                    || smooth.checkPixelForDifference(sourceImage,x1,y0,sourceBitmap.width,sourceBitmap.height) || smooth.checkPixelForDifference(sourceImage,x1,y1,sourceBitmap.width,sourceBitmap.height)) {
+                                    mutex.withLock{
+                                        pointsToSmooth.add(vec2d(x.toFloat(),y.toFloat()))
+                                    }
+                                }
+
+                                //Интерполяция между 4 пикселями в 1
                                 val newC1 = calculateMiddleInterpolation(px1,px2,dx)
                                 val newC2 = calculateMiddleInterpolation(px3,px4,dx)
-                                if(smooth.comparePixel(sourceImage,x0,y0,sourceBitmap.width,sourceBitmap.height) || smooth.comparePixel(sourceImage,x0,y1,sourceBitmap.width,sourceBitmap.height)
-                                    || smooth.comparePixel(sourceImage,x1,y0,sourceBitmap.width,sourceBitmap.height) || smooth.comparePixel(sourceImage,x1,y1,sourceBitmap.width,sourceBitmap.height) ){
-                                    arr.add(vec2d(x.toFloat(),y.toFloat()))
-                                }
                                 pixels[x + y*newImgWidth] = calculateMiddleInterpolation(newC1,newC2,dy)
                             }
                         }
@@ -73,34 +96,43 @@ class Resizer {
                 }
                 deferredResults.forEach { it.await() }
             }
-            for(i in 0..<arr.size){
-                smooth.smoothPixel(pixels,arr[i].x.toInt(),arr[i].y.toInt(),newImgWidth,newImgHeight)
+
+            //Сглаживаем все найденные граничные пиксели
+            for(i in 0..<pointsToSmooth.size){
+                println(i)
+                smooth.smoothPixel(pixels,pointsToSmooth[i].x.toInt(),pointsToSmooth[i].y.toInt(),newImgWidth,newImgHeight)
             }
+
+            //Запись пикселей из IntArray в bitmap
+            val resizedBitmap = Bitmap.createBitmap(newImgWidth, newImgHeight, Bitmap.Config.ARGB_8888)
             resizedBitmap.setPixels(pixels, 0, newImgWidth, 0, 0, newImgWidth,newImgHeight)
+
             return resizedBitmap
         }
         private suspend fun trilinearInterpolation(sourceBitmap:Bitmap, resizeXScale:Double, resizeYScale:Double, newImgWidth:Int, newImgHeight:Int) : Bitmap {
 
+            //Вычисление размеров двух ближайших mipmap уровней
             var resizeFactor = 1.0
             while (resizeFactor > resizeXScale && resizeFactor > resizeYScale){
                 resizeFactor *=  0.5
             }
             val resizeFactor2 =  resizeFactor*2
 
+            //Вычисление с помощью билинейной интерполяции двух ближайших mipmap уровней и запись их пикселей в IntArray
             val firstLevelWidth = (sourceBitmap.width*resizeFactor).toInt()
             val firstLevelHeight = (sourceBitmap.height*resizeFactor).toInt()
             val firstLevelBitmap = bilinearInterpolation(sourceBitmap,resizeFactor,resizeFactor,firstLevelWidth,firstLevelHeight)
             val firstLevelImage = IntArray(firstLevelWidth*firstLevelHeight)
             firstLevelBitmap.getPixels(firstLevelImage,0,firstLevelWidth,0,0,firstLevelWidth,firstLevelHeight)
-
             val secondLevelWidth = (sourceBitmap.width*resizeFactor2).toInt()
             val secondLevelHeight = (sourceBitmap.height*resizeFactor2).toInt()
             val secondLevelBitmap = bilinearInterpolation(sourceBitmap,resizeFactor2,resizeFactor2,secondLevelWidth,secondLevelHeight)
             val secondLevelImage = IntArray(secondLevelWidth*secondLevelHeight)
             secondLevelBitmap.getPixels(secondLevelImage,0,secondLevelWidth,0,0,secondLevelWidth,secondLevelHeight)
 
+            //Создание IntArray, которыЙ будет хранить новое изображение
             val resizedImage = IntArray(newImgWidth*newImgHeight)
-            val resizedBitmap = Bitmap.createBitmap(newImgWidth, newImgHeight, Bitmap.Config.ARGB_8888)
+
 
             withContext(Dispatchers.Default) {
                 val numCores = Runtime.getRuntime().availableProcessors()
@@ -113,6 +145,8 @@ class Resizer {
                         for (y in startY..<endY) {
 
                             for (x in 0 until newImgWidth) {
+
+                                //ПОВТОРЕНИЕ КОДА БИЛИНЕЙНОЙ ИНТЕРПОЛЯЦИИ ДЛЯ ДВУХ ИЗОБРАЖЕНИЙ
 
                                 val originalX = x / (resizeXScale/resizeFactor)
                                 val originalY = y / (resizeYScale/resizeFactor)
@@ -156,10 +190,14 @@ class Resizer {
                 }
                 deferredResults.forEach { it.await() }
             }
+            //Запись пикселей из IntArray в bitmap
+            val resizedBitmap = Bitmap.createBitmap(newImgWidth, newImgHeight, Bitmap.Config.ARGB_8888)
             resizedBitmap.setPixels(resizedImage, 0, newImgWidth, 0, 0, newImgWidth,newImgHeight)
+
             return resizedBitmap
         }
 
+        //Функция вычисления цвета между двумя пикселями с коеффициентом
         private fun calculateMiddleInterpolation(px1:Int,px2:Int,coef:Double) : Int{
             val newR = Color.red(px1) *(1-coef) + Color.red(px2) *coef
             val newG = Color.green(px1) *(1-coef) + Color.green(px2) *coef
