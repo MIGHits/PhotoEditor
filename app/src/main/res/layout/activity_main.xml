@@ -38,39 +38,67 @@
         android:scaleType="centerCrop"
         android:src="@drawable/gallery_icon"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/cubeButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mainScreenText"
-        app:layout_constraintVertical_bias="0.336" />
+        app:layout_constraintVertical_bias="0.01" />
 
     <ImageButton
-        android:id="@+id/fileButton"
+        android:id="@+id/cubeButton"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginTop="269dp"
         android:background="@null"
         android:scaleType="centerCrop"
-        android:src="@drawable/folder"
+        android:src="@drawable/cube"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.251"
-        app:layout_constraintStart_toEndOf="@+id/galleryButton"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mainScreenText"
-        app:layout_constraintVertical_bias="0.335" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <ImageButton
         android:id="@+id/cameraButton"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginTop="269dp"
+        android:layout_marginEnd="60dp"
         android:background="@null"
         android:scaleType="centerCrop"
         android:src="@drawable/camera"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.456"
-        app:layout_constraintStart_toEndOf="@+id/fileButton"
+        app:layout_constraintHorizontal_bias="0.517"
+        app:layout_constraintStart_toEndOf="@+id/cubeButton"
         app:layout_constraintTop_toBottomOf="@+id/mainScreenText"
-        app:layout_constraintVertical_bias="0.336" />
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageButton
+        android:id="@+id/splineButton"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/zigzag"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.327"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/galleryButton" />
+
+    <ImageButton
+        android:id="@+id/detectingFaces"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="32dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/face_detection"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.669"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cameraButton" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

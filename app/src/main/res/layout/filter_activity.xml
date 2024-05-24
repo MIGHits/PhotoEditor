@@ -9,14 +9,15 @@
 
     <ImageView
         android:id="@+id/customer_image"
-        android:layout_width="400dp"
+        android:layout_width="350dp"
         android:layout_height="500dp"
+        android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintHorizontal_bias="0.491"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.151"
+        app:layout_constraintVertical_bias="0.181"
         app:srcCompat="@android:drawable/ic_menu_gallery" />
 
     <ImageButton
@@ -74,28 +75,50 @@
 
     <ImageButton
         android:id="@+id/backButton"
-        android:layout_width="24dp"
-        android:layout_height="26dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:background="@null"
         android:scaleType="centerCrop"
         android:src="@drawable/back"
-        app:layout_constraintBottom_toTopOf="@+id/customer_image"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.012"
+        app:layout_constraintEnd_toStartOf="@+id/saveButton"
+        app:layout_constraintHorizontal_bias="0.047"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/saveButton"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="8dp"
         android:background="@null"
         android:scaleType="centerCrop"
         android:src="@drawable/save_image"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.958"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/undo"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/undo"
+        app:layout_constraintEnd_toStartOf="@+id/saveButton"
+        app:layout_constraintHorizontal_bias="0.438"
+        app:layout_constraintStart_toStartOf="@+id/backButton"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/redoButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/forward"
+        app:layout_constraintEnd_toEndOf="@+id/saveButton"
+        app:layout_constraintHorizontal_bias="0.564"
+        app:layout_constraintStart_toEndOf="@+id/backButton"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -103,7 +126,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="0°"
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="20sp"
@@ -112,12 +134,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rotationBar" />
 
+
     <SeekBar
         android:id="@+id/rotationBar"
         android:layout_width="180dp"
         android:layout_height="35dp"
-        android:max="180"
-        android:min="-180"
         android:progress="0"
         android:progressTint="#ff901b"
         android:thumbTint="#ff901b"
@@ -127,8 +148,104 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/customer_image"
-        app:layout_constraintVertical_bias="0.149" />
+        app:layout_constraintVertical_bias="0.162" />
 
+    <ImageView
+        android:id="@+id/firstTriangle"
+        android:layout_width="45dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/item_background"
+        android:scaleType="fitCenter"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.218"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/customer_image"
+        />
+
+    <TextView
+        android:id="@+id/firsTextInfo"
+        android:layout_width="45dp"
+        android:text="Первый треугольник"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:visibility="invisible"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/firstTriangle"
+        app:layout_constraintStart_toStartOf="@+id/firstTriangle"
+        app:layout_constraintTop_toBottomOf="@+id/firstTriangle" />
+
+    <TextView
+        android:id="@+id/secondTextInfo"
+        android:layout_width="45dp"
+        android:text="Второй треугольник"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:visibility="invisible"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/secondTriangle"
+        app:layout_constraintStart_toStartOf="@+id/secondTriangle"
+        app:layout_constraintTop_toBottomOf="@+id/secondTriangle" />
+
+
+    <ImageView
+        android:id="@+id/secondTriangle"
+        android:layout_width="45dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:visibility="invisible"
+        android:background="@drawable/item_background"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.778"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/customer_image" />
+
+    <TextView
+        android:id="@+id/AffineTextInfo"
+        android:layout_width="45dp"
+        android:text="Старт"
+        android:textAlignment="center"
+        android:visibility="invisible"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/AffineStart"
+        app:layout_constraintStart_toStartOf="@+id/AffineStart"
+        app:layout_constraintTop_toBottomOf="@+id/AffineStart" />
+
+
+    <ImageView
+        android:id="@+id/AffineStart"
+        android:layout_width="45dp"
+        android:layout_height="60dp"
+        android:visibility="invisible"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/item_background"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toStartOf="@+id/secondTriangle"
+        app:layout_constraintHorizontal_bias="0.504"
+        app:layout_constraintStart_toEndOf="@+id/firstTriangle"
+        app:layout_constraintTop_toBottomOf="@+id/customer_image" />
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/loading_animation"

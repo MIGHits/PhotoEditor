@@ -3,4 +3,8 @@
     <style name="mainFont">
         <item name="android:fontFamily">@font/main_screen_font</item>
     </style>
+
+    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@color/black</item>
+    </style>
 </resources>

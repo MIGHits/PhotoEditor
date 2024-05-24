@@ -1,35 +1,43 @@
 package com.example.myapplication
 
+import android.Manifest
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Bundle
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
-import android.net.Uri
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Color.argb
-import android.graphics.drawable.ColorDrawable
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.provider.Settings
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.example.photoeditor.Cube3d.CubeActivity
 import com.example.photoeditor.FilterActivity
-import android.Manifest
 import com.example.photoeditor.R
-import kotlin.math.abs
-import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity()
 {
     private val REQUEST_CODE_IMAGE_PICK = 100
     private val REQUEST_IMAGE_CAPTURE = 1
+    private val PERMISSION_REQUEST_CODE = 2
+    var vFilename: String = ""
+    val androidVersion = Build.VERSION.RELEASE
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -37,22 +45,53 @@ class MainActivity : AppCompatActivity()
         window.setNavigationBarColor(Color.parseColor("#5e6666"));
         val photoPickButton = findViewById<ImageButton>(R.id.galleryButton)
         val cameraButton =  findViewById<ImageButton>(R.id.cameraButton)
+        val cubeButton = findViewById<ImageButton>(R.id.cubeButton)
 
         cameraButton.setOnClickListener{
-            dispatchTakePictureIntent()
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), PERMISSION_REQUEST_CODE)
+            } else {
+                openCamera()
+            }
         }
 
         photoPickButton.setOnClickListener {
-            val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (ContextCompat.checkSelfPermission(this, permissions[0]) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, permissions[1]) != PackageManager.PERMISSION_GRANTED)
-            {
-                ActivityCompat.requestPermissions(this, permissions, 0)
+            var permissions:Array<String>
+            if(androidVersion.toInt()>12){
+                permissions = arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+                if(ContextCompat.checkSelfPermission(this,permissions[0])!= PackageManager.PERMISSION_GRANTED){
+                    ActivityCompat.requestPermissions(this, permissions, 0)
+                }
+                else{
+                    onGallery()
+                }
             }
-            else
-            {
-                onGallery()
+            else {
+                permissions = arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        permissions[0]
+                    ) != PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        this,
+                        permissions[1]
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(this, permissions, 0)
+                } else {
+                    onGallery()
+                }
             }
+        }
+
+        cubeButton.setOnClickListener{
+            var intent:Intent
+            intent = Intent(this, CubeActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -62,6 +101,29 @@ class MainActivity : AppCompatActivity()
         pickPhoto.type = "image/*"
         startActivityForResult(pickPhoto, REQUEST_CODE_IMAGE_PICK)
     }
+
+
+    private fun openCamera() {
+        val values = ContentValues()
+        values.put(MediaStore.Images.Media.TITLE, "New Picture")
+        values.put(MediaStore.Images.Media.DESCRIPTION, "From the Camera")
+
+        //camera intent
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        // set filename
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        vFilename = "FOTO_" + timeStamp + ".jpg"
+
+        // set direcory folder
+        val directory = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+        val file = File(directory, vFilename)
+        val image_uri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
+
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri)
+        startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
+    }
+
+
     private fun openAppSettings() {
         val intent = Intent(
             Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -81,32 +143,10 @@ class MainActivity : AppCompatActivity()
             }
             else
             {
-                // Permission denied, inform the user
                 Toast.makeText(this, "Необходим доступ к фото и видео", Toast.LENGTH_SHORT).show()
                 openAppSettings()
             }
         }
-    }
-    private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        startActivityForResult(intent, REQUEST_CODE_IMAGE_PICK)
-    }
-
-    private fun dispatchTakePictureIntent() {
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
-            takePictureIntent.resolveActivity(packageManager)?.also {
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-            }
-        }
-    }
-
-    private fun saveBitmapToFile(bitmap: Bitmap): Uri? {
-        val tempFile = File.createTempFile("temp_image", ".jpg", cacheDir)
-        tempFile.deleteOnExit()
-        val out = FileOutputStream(tempFile)
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-        out.close()
-        return FileProvider.getUriForFile(this, "com.example.yourapp.fileprovider", tempFile)
     }
 
 
@@ -114,7 +154,7 @@ class MainActivity : AppCompatActivity()
         super.onActivityResult(requestCode, resultCode, data)
 
         val imageUri:Uri?
-        val intent:Intent
+        var intent:Intent
 
         if (requestCode == REQUEST_CODE_IMAGE_PICK && resultCode == Activity.RESULT_OK) {
              imageUri = data?.data
@@ -124,15 +164,15 @@ class MainActivity : AppCompatActivity()
                 startActivity(intent)
             }
         }
-        else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            val imageBitmap = data?.extras?.get("data") as Bitmap
-            if ( imageBitmap != null) {
-                 imageUri = saveBitmapToFile(imageBitmap)
-                 intent = Intent(this, FilterActivity::class.java)
-                intent.putExtra("imageUri", imageUri.toString())
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            val file = File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), vFilename)
+            val PhotoUri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file)
+            if (PhotoUri!= null) {
+                intent = Intent(this, FilterActivity::class.java)
+                intent.putExtra("imageUri", PhotoUri.toString())
                 startActivity(intent)
             }
-
         }
     }
 
