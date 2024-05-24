@@ -1,16 +1,12 @@
 package com.example.photoeditor
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.util.Log
-import android.view.MotionEvent
-import android.view.View
-import android.widget.ImageView
-import com.example.photoeditor.AffineTransform.AffineTransform
-import com.example.photoeditor.Cube3d.Tria3d
-import com.example.photoeditor.Cube3d.vec3d
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.PI
 import kotlin.math.ceil
 import kotlin.math.exp

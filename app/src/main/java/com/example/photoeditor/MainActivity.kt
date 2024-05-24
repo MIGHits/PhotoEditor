@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity()
     private val REQUEST_IMAGE_CAPTURE = 1
     private val PERMISSION_REQUEST_CODE = 2
     var vFilename: String = ""
+    val androidVersion = Build.VERSION.RELEASE
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -55,15 +57,34 @@ class MainActivity : AppCompatActivity()
         }
 
         photoPickButton.setOnClickListener {
-            val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (ContextCompat.checkSelfPermission(this, permissions[0]) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, permissions[1]) != PackageManager.PERMISSION_GRANTED)
-            {
-                ActivityCompat.requestPermissions(this, permissions, 0)
+            var permissions:Array<String>
+            if(androidVersion.toInt()>12){
+                permissions = arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+                if(ContextCompat.checkSelfPermission(this,permissions[0])!= PackageManager.PERMISSION_GRANTED){
+                    ActivityCompat.requestPermissions(this, permissions, 0)
+                }
+                else{
+                    onGallery()
+                }
             }
-            else
-            {
-                onGallery()
+            else {
+                permissions = arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        permissions[0]
+                    ) != PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        this,
+                        permissions[1]
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(this, permissions, 0)
+                } else {
+                    onGallery()
+                }
             }
         }
 
