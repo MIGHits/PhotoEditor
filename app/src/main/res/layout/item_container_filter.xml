@@ -7,7 +7,7 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="45dp"
+        android:layout_width="50dp"
         android:layout_height="60dp"
         android:adjustViewBounds="true"
         android:background = "@drawable/item_background"

@@ -37,7 +37,7 @@ data class ItemData(val image:Int, val title:String)
 
 
 class FilterActivity: AppCompatActivity() {
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint("ClickableViewAccessibility", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.filter_activity)
@@ -138,8 +138,11 @@ class FilterActivity: AppCompatActivity() {
         val declineButton = findViewById<ImageButton>(R.id.decline)
         val acceptButton = findViewById<ImageButton>(R.id.accept)
 
-        val filterBar = findViewById<SeekBar>(R.id.rotationBar)
-        val barProgress = findViewById<TextView>(R.id.rotationDegree)
+        val filterBar = findViewById<SeekBar>(R.id.filterBar)
+        val barProgress = findViewById<TextView>(R.id.filterBarProgress)
+
+        val retouchBar = findViewById<SeekBar>(R.id.retouchCoeffBar)
+        val retouchBarProgress = findViewById<TextView>(R.id.retouchBarProgress)
 
         filterBar.parent as ViewGroup
 
@@ -148,6 +151,8 @@ class FilterActivity: AppCompatActivity() {
             if (event.action == MotionEvent.ACTION_DOWN) {
                 filterBar.visibility = View.INVISIBLE
                 barProgress.visibility = View.INVISIBLE
+                retouchBar.visibility = View.INVISIBLE
+                retouchBarProgress.visibility = View.INVISIBLE
                 return@setOnTouchListener true
             }
             false
@@ -187,6 +192,17 @@ class FilterActivity: AppCompatActivity() {
             loading.visibility = View.VISIBLE
         }
 
+
+        fun initializeSeekBar(min:Int, max:Int, progress:Int){
+            filterBar.min = min
+            filterBar.max = max
+            filterBar.progress = progress
+
+            barProgress.text = filterBar.progress.toString()
+            filterBar.visibility = View.VISIBLE
+            barProgress.visibility = View.VISIBLE
+        }
+
         backButton.setOnClickListener {
             finish()
         }
@@ -209,6 +225,9 @@ class FilterActivity: AppCompatActivity() {
             startBtn.visibility = View.INVISIBLE
             startInfo.visibility = View.INVISIBLE
 
+            retouchBar.visibility = View.INVISIBLE
+            retouchBarProgress.visibility = View.INVISIBLE
+
             imageView.setOnTouchListener(null)
         }
 
@@ -229,6 +248,10 @@ class FilterActivity: AppCompatActivity() {
 
             startBtn.visibility = View.INVISIBLE
             startInfo.visibility = View.INVISIBLE
+
+            retouchBar.visibility = View.INVISIBLE
+            retouchBarProgress.visibility = View.INVISIBLE
+
             imageView.setOnTouchListener(null)
 
             lifecycleScope.launch {
@@ -258,7 +281,7 @@ class FilterActivity: AppCompatActivity() {
         }
 
 
-        fun  OnClick(funBitmap: Bitmap){
+        fun  onClick(funBitmap: Bitmap){
             resultBitmap = funBitmap
             imageView.setImageBitmap(resultBitmap)
             loading.visibility = View.INVISIBLE
@@ -268,6 +291,27 @@ class FilterActivity: AppCompatActivity() {
             acceptButton.visibility = View.VISIBLE
         }
 
+        fun hideElements(){
+            declineButton.visibility = View.INVISIBLE
+            acceptButton.visibility = View.INVISIBLE
+
+            filterBar.visibility = View.INVISIBLE
+            barProgress.visibility = View.INVISIBLE
+
+            firstTriangleBtn.visibility = View.INVISIBLE
+            firstTriangleInfo.visibility = View.INVISIBLE
+
+            secondTriangleBtn.visibility = View.INVISIBLE
+            secondTriangleInfo.visibility = View.INVISIBLE
+
+            startBtn.visibility = View.INVISIBLE
+            startInfo.visibility = View.INVISIBLE
+
+            retouchBar.visibility = View.INVISIBLE
+            retouchBarProgress.visibility = View.INVISIBLE
+
+        }
+
         effectsAdapter.clickListener = object : CarouselAdapter.OnItemClickListener {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onItemClick(position: Int, item: Int) {
@@ -275,51 +319,50 @@ class FilterActivity: AppCompatActivity() {
                     when (position) {
                         0 -> {
                             loadingStart(imageView)
+                            hideElements()
                             resultBitmap =
                                 ColorFilters.negative(bitmap)
-                            OnClick(resultBitmap)
+                            onClick(resultBitmap)
                         }
 
                         1 -> {
 
                             loadingStart(imageView)
+                            hideElements()
                            resultBitmap =
                                 ColorFilters.redFilter(bitmap)
-                            OnClick(resultBitmap)
+                            onClick(resultBitmap)
                         }
 
                         2 -> {
 
                             loadingStart(imageView)
+                            hideElements()
                              resultBitmap =
                                 ColorFilters.greenFilter(bitmap)
-                            OnClick(resultBitmap)
+                            onClick(resultBitmap)
                         }
 
                         3 -> {
                             loadingStart(imageView)
+                            hideElements()
                             resultBitmap =
                                 ColorFilters.blueFilter(bitmap)
-                            OnClick(resultBitmap)
+                            onClick(resultBitmap)
                         }
 
                         4 -> {
 
                             loadingStart(imageView)
+                            hideElements()
                              resultBitmap =
                                 ColorFilters.grayscale(bitmap)
-                            OnClick(resultBitmap)
+                            onClick(resultBitmap)
                         }
 
                         5 -> {
-                            filterBar.min = 1
-                            filterBar.max = 100
-                            filterBar.progress = 1
-
-                            barProgress.text = filterBar.progress.toString()
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
-
+                            hideElements()
+                            initializeSeekBar(1,100,1)
                             filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                                     barProgress.text = progress.toString()
@@ -334,7 +377,7 @@ class FilterActivity: AppCompatActivity() {
                                         filterBar.isEnabled = false
                                          resultBitmap =
                                             ColorFilters.mosaic(bitmap, filterBar.progress)
-                                        OnClick(resultBitmap)
+                                        onClick(resultBitmap)
 
                                     }
                                 }
@@ -343,19 +386,15 @@ class FilterActivity: AppCompatActivity() {
 
                         6 -> {
                             loadingStart(imageView)
+                            hideElements()
                             resultBitmap =
                                 ColorFilters.sepia(bitmap)
-                            OnClick(resultBitmap)
+                            onClick(resultBitmap)
                         }
 
                         7->{
-                            filterBar.min = 1
-                            filterBar.max = 5
-
-                            barProgress.text = filterBar.min.toString()
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
-
+                            hideElements()
+                            initializeSeekBar(1,5,1)
                             filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                                     barProgress.text = progress.toString()
@@ -370,7 +409,7 @@ class FilterActivity: AppCompatActivity() {
                                         filterBar.isEnabled = false
                                         resultBitmap =
                                             ColorFilters.gaussianBlur(bitmap,filterBar.progress.toDouble())
-                                        OnClick(resultBitmap)
+                                        onClick(resultBitmap)
 
                                     }
                                 }
@@ -387,14 +426,10 @@ class FilterActivity: AppCompatActivity() {
                 lifecycleScope.launch {
                     when (position) {
                         0 -> {
-                            filterBar.min = -180
-                            filterBar.max = 180
 
-                            filterBar.progress = 0
+                            initializeSeekBar(-180,180,0)
                             barProgress.text = filterBar.progress.toString()+"°"
 
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
 
                             filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -410,7 +445,7 @@ class FilterActivity: AppCompatActivity() {
                                         rotationBar.isEnabled = false
                                         resultBitmap =
                                             ImageRotation.rotateBitmap(bitmap,rotationBar.progress.toDouble())
-                                        OnClick(resultBitmap)
+                                        onClick(resultBitmap)
                                     }
 
                                 }
@@ -418,12 +453,9 @@ class FilterActivity: AppCompatActivity() {
                         }
 
                         1->{
-                            filterBar.min = 10
-                            filterBar.max = 600
-                            filterBar.progress = 10
+                            hideElements()
+                            initializeSeekBar(10,600,100)
                             barProgress.text = (filterBar.progress/100.0).toString()
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
 
                             filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -438,7 +470,7 @@ class FilterActivity: AppCompatActivity() {
                                         loadingStart(imageView)
                                         rotationBar.isEnabled = false
                                         resultBitmap = Resizer.resize(bitmap,filterBar.progress/100.toDouble(),filterBar.progress/100.toDouble())
-                                        OnClick(resultBitmap)
+                                        onClick(resultBitmap)
 
                                     }
                                 }
@@ -447,12 +479,9 @@ class FilterActivity: AppCompatActivity() {
 
                         2 -> {
 
-                            filterBar.min = 0
-                            filterBar.max = 20
-                            filterBar.progress = 10
+                            hideElements()
+                            initializeSeekBar(0,20,10)
                             barProgress.text = (filterBar.progress/10.0).toString()
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
 
                             filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -468,7 +497,7 @@ class FilterActivity: AppCompatActivity() {
                                         filterBar.isEnabled = false
                                         resultBitmap =
                                             SaturationFilter.saturation(bitmap,(filterBar.progress/10.0).toFloat())
-                                        OnClick(resultBitmap)
+                                        onClick(resultBitmap)
 
                                     }
                                 }
@@ -476,13 +505,9 @@ class FilterActivity: AppCompatActivity() {
                         }
 
                         3 -> {
-                            filterBar.min = 0
-                            filterBar.max = 100
-                            filterBar.progress = 0
-
+                            hideElements()
+                            initializeSeekBar(0,100,0)
                             barProgress.text = filterBar.progress.toString()
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
 
                             filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -499,7 +524,7 @@ class FilterActivity: AppCompatActivity() {
                                         filterBar.isEnabled = false
                                         resultBitmap =
                                             ColorFilters.brightness(bitmap, filterBar.progress)
-                                        OnClick(resultBitmap)
+                                        onClick(resultBitmap)
 
                                     }
                                 }
@@ -507,6 +532,7 @@ class FilterActivity: AppCompatActivity() {
                         }
 
                         4 -> {
+                            hideElements()
                             recyclerView.visibility = View.INVISIBLE
                             effects.visibility = View.VISIBLE
 
@@ -516,13 +542,9 @@ class FilterActivity: AppCompatActivity() {
                         }
 
                         5 -> {
-                            filterBar.min = -100
-                            filterBar.max = 100
-                            filterBar.progress = 0
-
+                            hideElements()
+                            initializeSeekBar(-100,100,0)
                             barProgress.text = filterBar.progress.toString()
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
 
                             filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -539,7 +561,7 @@ class FilterActivity: AppCompatActivity() {
                                         rotationBar.isEnabled = false
                                         resultBitmap =
                                             ColorFilters.contrast(bitmap, filterBar.progress)
-                                        OnClick(resultBitmap)
+                                        onClick(resultBitmap)
 
                                     }
                                 }
@@ -547,13 +569,17 @@ class FilterActivity: AppCompatActivity() {
                         }
 
                         6 -> {
-                            filterBar.min = 5
-                            filterBar.max = 100
-                            filterBar.progress = 50
-
+                            hideElements()
+                            initializeSeekBar(5,100,50)
                             barProgress.text = filterBar.progress.toString()
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
+
+                            retouchBar.min = 100
+                            retouchBar.max = 200
+                            retouchBar.progress = 100
+                            retouchBarProgress.text = (retouchBar.progress/100.0).toString()
+
+                            retouchBar.visibility = View.VISIBLE
+                            retouchBarProgress.visibility = View.VISIBLE
 
                             imageView.setRetouchable(filterBar.progress,1.0,imageView,acceptButton,declineButton)
 
@@ -568,20 +594,32 @@ class FilterActivity: AppCompatActivity() {
 
                                     lifecycleScope.launch{
 
-                                        imageView.setRetouchable(filterBar.progress,1.0,imageView,acceptButton,declineButton)
+                                        imageView.setRetouchable(filterBar.progress,retouchBar.progress/100.0,imageView,acceptButton,declineButton)
+                                    }
+                                }
+                            })
+
+                            retouchBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                                    retouchBarProgress.text = (retouchBar.progress/100.0).toString()
+                                }
+
+                                override fun onStartTrackingTouch(retouchBar: SeekBar) {}
+
+                                override fun onStopTrackingTouch(retouchBar: SeekBar) {
+
+                                    lifecycleScope.launch{
+
+                                        imageView.setRetouchable(filterBar.progress,retouchBar.progress/100.0,imageView,acceptButton,declineButton)
                                     }
                                 }
                             })
                         }
 
                         7->{
-                            filterBar.min = 1
-                            filterBar.max = 5
-                            filterBar.progress = 1
-
+                            hideElements()
+                            initializeSeekBar(1,5,1)
                             barProgress.text = filterBar.min.toString()
-                            filterBar.visibility = View.VISIBLE
-                            barProgress.visibility = View.VISIBLE
 
                             filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -596,7 +634,7 @@ class FilterActivity: AppCompatActivity() {
                                         loadingStart(imageView)
                                         resultBitmap =
                                             ColorFilters.unsharpMasking(bitmap,filterBar.progress)
-                                        OnClick(resultBitmap)
+                                        onClick(resultBitmap)
 
                                     }
                                 }
@@ -604,7 +642,7 @@ class FilterActivity: AppCompatActivity() {
                         }
 
                         8->{
-
+                            hideElements()
                             firstTriangleBtn.visibility = View.VISIBLE
                             firstTriangleInfo.visibility = View.VISIBLE
                             firstTriangleInfo.setSelected(true)
@@ -615,12 +653,12 @@ class FilterActivity: AppCompatActivity() {
 
                             startBtn.visibility = View.VISIBLE
                             startInfo.visibility = View.VISIBLE
-                            imageView.setTouchable(imageView,bitmap)
 
 
                             firstTriangleBtn.setOnClickListener{
                                 Affine.createFirstTriangle()
                                 firstTriangleBtn.startAnimation(animation)
+                                imageView.setTouchable(imageView,bitmap)
                             }
 
                             secondTriangleBtn.setOnClickListener{
@@ -632,7 +670,7 @@ class FilterActivity: AppCompatActivity() {
                                 lifecycleScope.launch {
                                     startBtn.startAnimation(animation)
                                     resultBitmap = Affine.callAffine(bitmap)
-                                    OnClick(resultBitmap)
+                                    onClick(resultBitmap)
                                 }
                             }
                         }

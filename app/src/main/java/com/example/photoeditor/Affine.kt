@@ -125,9 +125,9 @@ class Affine {
             val finalTransformedTriangle =  Tria3d(vec3d(affineTriangle.p[0].x, affineTriangle.p[0].y, 0.0f),
                                                    vec3d(affineTriangle.p[1].x, affineTriangle.p[1].y, 0.0f),
                                                    vec3d(affineTriangle.p[2].x, affineTriangle.p[2].y, 0.0f),
-                                                   vec2d(affineTriangle.t[0].x, affineTriangle.p[0].y),
-                                                   vec2d(affineTriangle.t[1].x, affineTriangle.p[1].y),
-                                                   vec2d(affineTriangle.p[2].x, affineTriangle.p[2].y))
+                                                   vec2d(affineTriangle.t[0].x, affineTriangle.t[0].y),
+                                                   vec2d(affineTriangle.t[1].x, affineTriangle.t[1].y),
+                                                   vec2d(affineTriangle.t[2].x, affineTriangle.t[2].y))
 
             finalTransformedTriangle.p[0].y = bitmap.height - affineTriangle.p[0].y
             finalTransformedTriangle.p[1].y = bitmap.height - affineTriangle.p[1].y

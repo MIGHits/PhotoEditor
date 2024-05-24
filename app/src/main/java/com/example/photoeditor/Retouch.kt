@@ -3,6 +3,7 @@ package com.example.photoeditor
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Color.alpha
 import android.graphics.drawable.BitmapDrawable
 import android.view.MotionEvent
 import android.view.View
@@ -84,6 +85,7 @@ class Retouch {
                             val distance = sqrt(distanceSquared.toDouble()).toInt()
                             val weight = precomputedWeights[distance]
                             val pixel = pixels[y * width + x]
+                            if(alpha(pixel)==0){continue}
                             totalRed[0] += Color.red(pixel) * weight
                             totalGreen[0] += Color.green(pixel) * weight
                             totalBlue[0] += Color.blue(pixel) * weight
@@ -109,6 +111,7 @@ class Retouch {
                                     val distanceSquared = dx * dx + dy * dy
                                     if (distanceSquared <= brushRadiusSquared) {
                                         val pixel = pixels[y * width + x]
+                                        if(alpha(pixel)==0){continue}
                                         val distance = sqrt(distanceSquared.toDouble())
                                         val weight = sin((distance / brushRadius * PI / 2) * retouchCoeff).toFloat()
                                         val newRed = (Color.red(pixel) * weight + avgRed * (1 - weight)).toInt()
