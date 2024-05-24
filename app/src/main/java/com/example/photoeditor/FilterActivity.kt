@@ -26,12 +26,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
+import com.example.photoeditor.Affine.Companion.setTouchable
 import com.example.photoeditor.Retouch.Companion.setRetouchable
 import kotlinx.coroutines.launch
-import java.net.HttpURLConnection
 import java.util.Stack
-import com.example.photoeditor.Affine.Companion
-import com.example.photoeditor.Affine.Companion.setTouchable
 
 
 data class ItemData(val image:Int, val title:String)
@@ -588,9 +586,11 @@ class FilterActivity: AppCompatActivity() {
                             var resultBitmap:Bitmap
                             firstTriangleBtn.visibility = View.VISIBLE
                             firstTriangleInfo.visibility = View.VISIBLE
+                            firstTriangleInfo.setSelected(true)
 
                             secondTriangleBtn.visibility = View.VISIBLE
                             secondTriangleInfo.visibility = View.VISIBLE
+                            secondTriangleInfo.setSelected(true)
 
                             startBtn.visibility = View.VISIBLE
                             startInfo.visibility = View.VISIBLE

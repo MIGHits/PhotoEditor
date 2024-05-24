@@ -9,12 +9,12 @@
 
     <ImageView
         android:id="@+id/customer_image"
-        android:layout_width="match_parent"
+        android:layout_width="350dp"
         android:layout_height="500dp"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintHorizontal_bias="0.491"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.181"
@@ -145,10 +145,10 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/customer_image"
-        app:layout_constraintVertical_bias="0.318" />
+        app:layout_constraintVertical_bias="0.162" />
 
     <ImageView
         android:id="@+id/firstTriangle"
@@ -218,6 +218,7 @@
         android:id="@+id/AffineTextInfo"
         android:layout_width="45dp"
         android:text="Старт"
+        android:textAlignment="center"
         android:visibility="invisible"
         android:layout_height="wrap_content"
         android:ellipsize="marquee"

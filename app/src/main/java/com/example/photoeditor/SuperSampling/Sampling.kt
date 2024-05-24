@@ -1,6 +1,5 @@
 package com.example.photoeditor.SuperSampling
 
-import android.graphics.Bitmap
 import android.graphics.Color.blue
 import android.graphics.Color.green
 import android.graphics.Color.red
@@ -13,7 +12,7 @@ val pi = 3.14159
 fun gaussianFunction(x: Int, y: Int, sigma: Double): Double {
     return e.pow(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * pi * sigma * sigma)
 }
-fun comparePixel(p1:Int,p2:Int):Boolean {
+fun compareTwoPixels(p1:Int,p2:Int):Boolean {
     val cmprFac = 255*0.2f
     if ((red(p1) >= red(p2)-cmprFac && red(p1) <= red(p2)+cmprFac)
         && (blue(p1) >= blue(p2)-cmprFac && blue(p1) <= blue(p2)+cmprFac)
@@ -22,7 +21,7 @@ fun comparePixel(p1:Int,p2:Int):Boolean {
     }
     return true
 }
-class MLAA(){
+class GausBlur(){
 
     val sigma = 1.0
     val radius = (1 * 2)
@@ -50,12 +49,12 @@ class MLAA(){
 
         }
     }
-    fun comparePixel(image:Bitmap,x:Int,y:Int):Boolean {
-        if (x >= image.width-1 || y >= image.height-1) {
+    fun comparePixel(image:IntArray,x:Int,y:Int,width:Int,height: Int):Boolean {
+        if (x >= width-1 || y >= height-1) {
             return false
         }
-        val isBot = comparePixel(image.getPixel(x, y), image.getPixel(x, y + 1))
-        val isRight = comparePixel(image.getPixel(x + 1, y), image.getPixel(x, y))
+        val isBot = compareTwoPixels(image[x + y * width], image[x + (y + 1) * width])
+        val isRight = compareTwoPixels(image[x + 1 + y * width], image[x + y * width])
 
         if (isBot || isRight) {
             return true
@@ -96,5 +95,4 @@ class MLAA(){
 
     }
 }
-
 
