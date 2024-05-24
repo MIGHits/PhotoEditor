@@ -53,6 +53,9 @@ class SplineActivity : AppCompatActivity() {
         saveButton = findViewById(R.id.saveButton)
         removeDotsButton = findViewById(R.id.removeDotsButton)
         moveDotsButton = findViewById(R.id.moveDotsButton)
+        drawingView.setDrawingEnabled(true)
+        isRemovingEnabled = false
+        isMovingEnabled = false
 
         clearButton.setOnClickListener {
             drawingView.clear()
