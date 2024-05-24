@@ -6,13 +6,6 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-
-fun findMin3(a:Float,b:Float,c:Float):Float{
-    return min(min(a,b),c)
-}
-fun findMax3(a:Float,b:Float,c:Float):Float{
-    return max(max(a,b),c)
-}
 fun createColor(r:Int,g:Int,b:Int,a:Int):Int{
     return a shl 24 or (r shl 16) or (g shl 8) or (b)
 }

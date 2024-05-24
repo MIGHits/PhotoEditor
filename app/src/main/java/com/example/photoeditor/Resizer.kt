@@ -202,7 +202,8 @@ class Resizer {
             val newR = Color.red(px1) *(1-coef) + Color.red(px2) *coef
             val newG = Color.green(px1) *(1-coef) + Color.green(px2) *coef
             val newB = Color.blue(px1) *(1-coef) + Color.blue(px2) *coef
-            return (255 shl 24) or (newR.toInt() shl 16) or (newG.toInt() shl 8) or newB.toInt()
+            val newA = Color.alpha(px1) *(1-coef) + Color.alpha(px2) *coef
+            return (newA.toInt() shl 24) or (newR.toInt() shl 16) or (newG.toInt() shl 8) or newB.toInt()
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.photoeditor
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Color.alpha
 import kotlinx.coroutines.*
 import kotlin.math.*
 
@@ -26,6 +27,10 @@ class SaturationFilter {
                         for (y in startY until endY) {
                             for (x in 0 until width) {
                                 val pixel = pixels[y * width + x]
+
+                                if (alpha(pixel)==0){
+                                    continue
+                                }
 
                                 val hsl = FloatArray(3)
                                 val r = Color.red(pixel)
