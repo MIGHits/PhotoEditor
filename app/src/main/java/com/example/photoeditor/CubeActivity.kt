@@ -1,19 +1,13 @@
 package com.example.photoeditor.Cube3d
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.util.Log
 import android.view.MotionEvent
-import android.view.View
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import com.example.photoeditor.Affine
 import com.example.photoeditor.R
 import com.example.photoeditor.UsefulFuns.getBitmapFromAsset
 import com.example.photoeditor.vec2d
@@ -111,7 +105,7 @@ class CubeActivity : AppCompatActivity() {
     }
 
     fun initMesh() {
-        val textureBitmap = getBitmapFromAsset(this, "texture.png")
+        val textureBitmap = getBitmapFromAsset(this, "texture1.png")
         texture = IntArray(textureBitmap.width*textureBitmap.height)
         textureBitmap.getPixels(texture,0,textureBitmap.width,0,0,textureBitmap.width,textureBitmap.height)
         texWidth = textureBitmap.width
@@ -122,6 +116,7 @@ class CubeActivity : AppCompatActivity() {
         newScene.createRotationMatrix('y',absAngleX)
         newScene.createRotationMatrix('x',absAngleY)
 
+        //Создание треугольников 3д кубика
         newScene.loadMesh(arrayOf(
             Tria3d(
                 vec3d(0.0f,0.0f,0.0f,1.0f),

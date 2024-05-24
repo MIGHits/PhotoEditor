@@ -1,43 +1,11 @@
 package com.example.photoeditor.Cube3d
 
-import com.example.photoeditor.AffineTransform.AffineTransform
-import com.example.photoeditor.UsefulFuns.findMax3
-import com.example.photoeditor.UsefulFuns.findMin3
-import kotlinx.coroutines.async
 import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
 
-fun isPointInTriangle(x:Int,y:Int, triangle: Tria3d):Boolean{
-    val a = triangle.p[0]
-    val b = triangle.p[1]
-    val c = triangle.p[2]
-    //val aSide = (a.y - b.y)*p.x + (b.x - a.x)*p.y + (a.x*b.y - b.x*a.y)
-    //val bSide = (b.y - c.y)*p.x + (c.x - b.x)*p.y + (b.x*c.y - c.x*b.y)
-    //val cSide = (c.y - a.y)*p.x + (a.x - c.x)*p.y + (c.x*a.y - a.x*c.y)
-    val aSide = (a.x - x) * (b.y - a.y) - (b.x - a.x) * (a.y - y)
-    val bSide = (b.x - x) * (c.y - b.y) - (c.x - b.x) * (b.y - y)
-    val cSide = (c.x - x) * (a.y - c.y) - (a.x - c.x) * (c.y - y)
-    return (aSide >= 0 && bSide >= 0 && cSide >= 0 ) || (aSide < 0 && bSide < 0 && cSide < 0)
-}
 
-fun findBox2D(tris: Tria3d, width:Int, height:Int):Box2D{
-    val result = Box2D(
-        vec3d(max(findMin3(tris.p[0].x,tris.p[1].x,tris.p[2].x),0.0f),
-              max(findMin3(tris.p[0].y,tris.p[1].y,tris.p[2].y),0.0f),
-            0.0f),
-        vec3d(min(findMax3(tris.p[0].x,tris.p[1].x,tris.p[2].x),width.toFloat()),
-              min(findMax3(tris.p[0].y,tris.p[1].y,tris.p[2].y),height.toFloat()),
-            0.0f))
-    return result
-}
-fun drawTriangle(pixels:IntArray, triangle: Tria3d, imgWidth:Int,imgHeight: Int, texture:IntArray, texWidth:Int){
+//Функция разделяет один большой треугольник на два маленьких и отрисовывает их с текстурами
+fun drawTriangle(image:IntArray, tris: Tria3d, imgWidth:Int,imgHeight: Int, texture:IntArray, texWidth:Int){
 
-    texturedTriangle(triangle,pixels,texture,imgWidth,imgHeight,texWidth)
-
-}
-fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:Int,imgHeight:Int, texWidth:Int){
     var x1 = tris.p[0].x.toInt()
     var x2 = tris.p[1].x.toInt()
     var x3 = tris.p[2].x.toInt()
@@ -53,6 +21,8 @@ fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:In
     var w1 = tris.t[0].w
     var w2 = tris.t[1].w
     var w3 = tris.t[2].w
+
+    //Сортировка переменных для удобства
     if (y2 < y1){
         y1=y2.also { y2 = y1 }
         x1=x2.also { x2 = x1 }
@@ -74,6 +44,8 @@ fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:In
         v2=v3.also { v3 = v2 }
         w2=w3.also { w3 = w2 }
     }
+
+    //Вычисление некоторых переменных, нужных для дальнейших рассчетов
     var dy1 = y2-y1
     var dx1 = x2-x1
     var dv1 = v2-v1
@@ -99,6 +71,7 @@ fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:In
     var dw1_step = 0.0f
     var dw2_step = 0.0f
 
+    //Вычисления длины шагов
     if (dy1!=0) dax_step = dx1/(abs(dy1)).toFloat()
     if (dy2!=0) dbx_step = dx2/(abs(dy2)).toFloat()
 
@@ -110,17 +83,19 @@ fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:In
     if (dy2!=0) dv2_step = dv2/(abs(dy2)).toFloat()
     if (dy2!=0) dw2_step = dw2/(abs(dy2)).toFloat()
 
+    //Отрисовка первого треугольника от y1 до y2
     if (dy1 !=0){
         for(i in y1..y2){
+            //Позиции на экране
             var ax = x1 + (i-y1).toFloat() * dax_step
             var bx = x1 + (i-y1).toFloat() * dbx_step
 
-            //начальные позиции с текстуры
+            //Позиции начала на текстуре
             var tex_su = u1 + (i-y1).toFloat() * du1_step
             var tex_sv = v1 + (i-y1).toFloat() * dv1_step
             var tex_sw = w1 + (i-y1).toFloat() * dw1_step
 
-            //конечные позиции
+            //Конечные позиции на текстуре
             var tex_eu = u1 + (i-y1).toFloat() * du2_step
             var tex_ev = v1 + (i-y1).toFloat() * dv2_step
             var tex_ew = w1 + (i-y1).toFloat() * dw2_step
@@ -140,6 +115,7 @@ fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:In
             var t = 0.0f
 
             for(j in ax.toInt()..<bx.toInt()){
+                //Интерполяция по текстуре
                 tex_u = (1.0f - t) * tex_su + t * tex_eu
                 tex_v = (1.0f - t) * tex_sv + t * tex_ev
                 tex_w = (1.0f - t) * tex_sw + t * tex_ew
@@ -152,6 +128,8 @@ fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:In
             }
         }
     }
+
+    //Частичное повторение прошлого кода для отрисовки второго треугольника
     dy1 = y3-y2
     dx1 = x3-x2
     dv1 = v3-v2
@@ -206,9 +184,9 @@ fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:In
                 image[j + i*imgWidth] = texture[(tex_u/tex_w).toInt() + (tex_v/tex_w).toInt()*texWidth]
             }
 
-
             t+=tstep
         }
     }
+
 }
 
