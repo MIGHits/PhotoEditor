@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="frameButton" type="id">frameButton</item>
+    <item name="mosaicButton" type="id">mosaicButton</item>
+    <item name="pickImageButton" type="id">pickImageButton</item>
+    <item name="takeAPhotoButton" type="id">takeAPhotoButton</item>
+    <item name="closeButton" type="id">closeButton</item>
+</resources>
