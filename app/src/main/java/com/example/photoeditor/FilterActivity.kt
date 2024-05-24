@@ -318,7 +318,7 @@ class FilterActivity: AppCompatActivity() {
                             imageView.visibility = View.INVISIBLE
                             loading.visibility = View.VISIBLE
                             val saturatedBitmap =
-                                SaturationFilter.saturation(bitmap,0.5f)
+                                SaturationFilter.saturation(bitmap,2f)
                             imageView.setImageBitmap(saturatedBitmap)
                             imageView.visibility = View.VISIBLE
                             loading.visibility = View.INVISIBLE
