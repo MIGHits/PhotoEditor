@@ -148,7 +148,7 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/customer_image"
-        app:layout_constraintVertical_bias="0.162" />
+        app:layout_constraintVertical_bias="0.129" />
 
     <ImageView
         android:id="@+id/firstTriangle"
