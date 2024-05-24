@@ -565,7 +565,7 @@ class FilterActivity: AppCompatActivity() {
 
 
                             firstTriangleBtn.setOnClickListener{
-                                imageView.setTouchable(imageView,bitmap)
+                                Affine.createFirstTriangle()
                                 firstTriangleBtn.startAnimation(animation)
                             }
 

@@ -9,9 +9,8 @@ import kotlin.math.pow
 
 val e =2.71828
 val pi = 3.14159
-fun gaussianFunction(x: Int, y: Int, sigma: Double): Double {
-    return e.pow(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * pi * sigma * sigma)
-}
+
+//Функция сравнения двух пикселей на схожесть по цвету
 fun compareTwoPixels(p1:Int,p2:Int):Boolean {
     val cmprFac = 255*0.2f
     if ((red(p1) >= red(p2)-cmprFac && red(p1) <= red(p2)+cmprFac)
@@ -21,10 +20,12 @@ fun compareTwoPixels(p1:Int,p2:Int):Boolean {
     }
     return true
 }
-class GausBlur(){
+fun gaussianFunction(x: Int, y: Int, sigma: Int): Double {
+    return e.pow(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * pi * sigma * sigma)
+}
+class GausBlur(sigma:Int){
 
-    val sigma = 1.0
-    val radius = (1 * 2)
+    val radius = (sigma * 2)
     val kernelWidth = radius * 2 + 1
 
     val kernel = Array(kernelWidth) { Array(kernelWidth) { 0.0 } }
@@ -49,12 +50,14 @@ class GausBlur(){
 
         }
     }
-    fun comparePixel(image:IntArray,x:Int,y:Int,width:Int,height: Int):Boolean {
-        if (x >= width-1 || y >= height-1) {
+
+    //Функция сравнивает пиксель с 4 пикселями вокруг
+    fun checkPixelForDifference(image:IntArray, x:Int, y:Int, width:Int, height: Int):Boolean {
+        if (x >= width-1 || y >= height-1 || x <= 0 || y <= 0) {
             return false
         }
         val isBot = compareTwoPixels(image[x + y * width], image[x + (y + 1) * width])
-        val isRight = compareTwoPixels(image[x + 1 + y * width], image[x + y * width])
+        val isRight = compareTwoPixels(image[x + y * width], image[x + 1 + y * width])
 
         if (isBot || isRight) {
             return true
