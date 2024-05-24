@@ -28,11 +28,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
 import com.example.photoeditor.Affine.Companion.setTouchable
 import com.example.photoeditor.Retouch.Companion.setRetouchable
-import kotlinx.coroutines.launch
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import kotlinx.coroutines.*
+import android.view.animation.AnimationUtils
 import java.util.Stack
 
 
@@ -47,7 +44,9 @@ class FilterActivity: AppCompatActivity() {
 
         window.setStatusBarColor(Color.parseColor("#304352"))
         window.setNavigationBarColor(Color.parseColor("#d7d2cc"))
+        val animation = AnimationUtils.loadAnimation(this,R.anim.fade_out)
 
+        var resultBitmap:Bitmap
 
         val undoStack: Stack<Uri> = Stack()
         val redoStack: Stack<Uri> = Stack()
@@ -64,6 +63,15 @@ class FilterActivity: AppCompatActivity() {
         val backButton = findViewById<ImageButton>(R.id.backButton)
 
         val saveButton = findViewById<ImageButton>(R.id.saveButton)
+
+        val firstTriangleBtn = findViewById<ImageView>(R.id.firstTriangle)
+        val firstTriangleInfo = findViewById<TextView>(R.id.firsTextInfo)
+
+        val secondTriangleBtn = findViewById<ImageView>(R.id.secondTriangle)
+        val secondTriangleInfo = findViewById<TextView>(R.id.secondTextInfo)
+
+        val startBtn = findViewById<ImageView>(R.id.AffineStart)
+        val startInfo = findViewById<TextView>(R.id.AffineTextInfo)
 
         val loading = findViewById<LottieAnimationView>(R.id.loading_animation)
 
@@ -102,15 +110,10 @@ class FilterActivity: AppCompatActivity() {
 
 
         fun saveImageToMediaStore(bitmap: Bitmap) {
-            val contentResolver = contentResolver
-            val currentDate = Date()
-            val dateFormat: DateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-            val dateText = dateFormat.format(currentDate)
-            val timeFormat: DateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-            val timeText = timeFormat.format(currentDate)
 
+            val contentResolver = contentResolver
             val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, "filtered_image-$dateText-$timeText.jpg")
+                put(MediaStore.MediaColumns.DISPLAY_NAME, "filtered_image.jpg")
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                 put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
             }
@@ -151,6 +154,15 @@ class FilterActivity: AppCompatActivity() {
             imageView.setImageBitmap(bitmap)
             filterBar.visibility = View.INVISIBLE
             barProgress.visibility = View.INVISIBLE
+
+            firstTriangleBtn.visibility = View.INVISIBLE
+            firstTriangleInfo.visibility = View.INVISIBLE
+
+            secondTriangleBtn.visibility = View.INVISIBLE
+            secondTriangleInfo.visibility = View.INVISIBLE
+
+            startBtn.visibility = View.INVISIBLE
+            startInfo.visibility = View.INVISIBLE
         }
 
         acceptButton.setOnClickListener {
@@ -162,6 +174,15 @@ class FilterActivity: AppCompatActivity() {
             recyclerView.visibility = View.VISIBLE
             filterBar.visibility = View.INVISIBLE
             barProgress.visibility = View.INVISIBLE
+            firstTriangleBtn.visibility = View.INVISIBLE
+            firstTriangleInfo.visibility = View.INVISIBLE
+
+            secondTriangleBtn.visibility = View.INVISIBLE
+            secondTriangleInfo.visibility = View.INVISIBLE
+
+            startBtn.visibility = View.INVISIBLE
+            startInfo.visibility = View.INVISIBLE
+
             History.addImageToUndoStack(photoUri,undoStack,redoStack)
         }
 
@@ -196,7 +217,7 @@ class FilterActivity: AppCompatActivity() {
             ItemData(R.drawable.contrast, "Контраст"),
             ItemData(R.drawable.retouch, "Ретуширование"),
             ItemData(R.drawable.sharpen,"Нерезкое маскирование"),
-            ItemData(R.drawable.error,"Афинные преобразования"))
+            ItemData(R.drawable.affine,"Афинные преобразования"))
 
         recyclerView.addItemDecoration(SpacesItemDecoration(5))
         val adapter = CarouselAdapter(itemList, this)
@@ -231,6 +252,17 @@ class FilterActivity: AppCompatActivity() {
         val effectsSnapHelper = LinearSnapHelper()
         effectsSnapHelper.attachToRecyclerView(effects)
 
+        suspend fun  OnClick(funBitmap: Bitmap){
+            resultBitmap = funBitmap
+            photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
+            imageView.setImageBitmap(resultBitmap)
+            loading.visibility = View.INVISIBLE
+            imageView.visibility = View.VISIBLE
+            filterBar.isEnabled = true
+            declineButton.visibility = View.VISIBLE
+            acceptButton.visibility = View.VISIBLE
+        }
+
         effectsAdapter.clickListener = object : CarouselAdapter.OnItemClickListener {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onItemClick(position: Int, item: Int) {
@@ -238,55 +270,40 @@ class FilterActivity: AppCompatActivity() {
                     when (position) {
                         0 -> {
                             loadingStart(imageView)
-                            val resultBitmap =
+                            resultBitmap =
                                 ColorFilters.negative(bitmap)
-                            imageView.setImageBitmap(resultBitmap)
-                            imageView.visibility = View.VISIBLE
-                            loading.visibility = View.INVISIBLE
-                            photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
+                            OnClick(resultBitmap)
                         }
 
                         1 -> {
 
                             loadingStart(imageView)
-                            val resultBitmap =
+                           resultBitmap =
                                 ColorFilters.redFilter(bitmap)
-                            photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
-                            imageView.setImageBitmap(resultBitmap)
-                            imageView.visibility = View.VISIBLE
-                            loading.visibility = View.INVISIBLE
+                            OnClick(resultBitmap)
                         }
 
                         2 -> {
 
                             loadingStart(imageView)
-                            val resultBitmap =
+                             resultBitmap =
                                 ColorFilters.greenFilter(bitmap)
-                            photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
-                            imageView.setImageBitmap(resultBitmap)
-                            imageView.visibility = View.VISIBLE
-                            loading.visibility = View.INVISIBLE
+                            OnClick(resultBitmap)
                         }
 
                         3 -> {
                             loadingStart(imageView)
-                            val resultBitmap =
+                            resultBitmap =
                                 ColorFilters.blueFilter(bitmap)
-                            photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
-                            imageView.setImageBitmap(resultBitmap)
-                            imageView.visibility = View.VISIBLE
-                            loading.visibility = View.INVISIBLE
+                            OnClick(resultBitmap)
                         }
 
                         4 -> {
 
                             loadingStart(imageView)
-                            val resultBitmap =
+                             resultBitmap =
                                 ColorFilters.grayscale(bitmap)
-                            imageView.setImageBitmap(resultBitmap)
-                            photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
-                            imageView.visibility = View.VISIBLE
-                            loading.visibility = View.INVISIBLE
+                            OnClick(resultBitmap)
                         }
 
                         5 -> {
@@ -308,15 +325,9 @@ class FilterActivity: AppCompatActivity() {
                                     lifecycleScope.launch{
                                         loadingStart(imageView)
                                         filterBar.isEnabled = false
-                                         val resultBitmap =
+                                         resultBitmap =
                                             ColorFilters.mosaic(bitmap, filterBar.progress)
-                                        photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
-                                        imageView.setImageBitmap(resultBitmap)
-                                        loading.visibility = View.INVISIBLE
-                                        imageView.visibility = View.VISIBLE
-                                        filterBar.isEnabled = true
-                                        declineButton.visibility = View.VISIBLE
-                                        acceptButton.visibility = View.VISIBLE
+                                        OnClick(resultBitmap)
 
                                     }
                                 }
@@ -325,12 +336,9 @@ class FilterActivity: AppCompatActivity() {
 
                         6 -> {
                             loadingStart(imageView)
-                            val resultBitmap =
+                            resultBitmap =
                                 ColorFilters.sepia(bitmap)
-                            photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
-                            imageView.setImageBitmap(resultBitmap)
-                            imageView.visibility = View.VISIBLE
-                            loading.visibility = View.INVISIBLE
+                            OnClick(resultBitmap)
                         }
                         7->{
                             filterBar.min = 1
@@ -351,15 +359,9 @@ class FilterActivity: AppCompatActivity() {
                                     lifecycleScope.launch{
                                         loadingStart(imageView)
                                         filterBar.isEnabled = false
-                                        val resultBitmap =
+                                        resultBitmap =
                                             ColorFilters.gaussianBlur(bitmap,filterBar.progress.toDouble())
-                                        photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
-                                        imageView.setImageBitmap(resultBitmap)
-                                        loading.visibility = View.INVISIBLE
-                                        imageView.visibility = View.VISIBLE
-                                        filterBar.isEnabled = true
-                                        declineButton.visibility = View.VISIBLE
-                                        acceptButton.visibility = View.VISIBLE
+                                        OnClick(resultBitmap)
 
                                     }
                                 }
@@ -397,14 +399,9 @@ class FilterActivity: AppCompatActivity() {
                                         imageView.visibility = View.INVISIBLE
                                         loading.visibility = View.VISIBLE
                                         rotationBar.isEnabled = false
-                                        val rotatedBitmap =
+                                        resultBitmap =
                                             ImageRotation.rotateBitmap(bitmap,rotationBar.progress.toDouble())
-                                        imageView.setImageBitmap(rotatedBitmap)
-                                        loading.visibility = View.INVISIBLE
-                                        imageView.visibility = View.VISIBLE
-                                        rotationBar.isEnabled = true
-                                        declineButton.visibility = View.VISIBLE
-                                        acceptButton.visibility = View.VISIBLE
+                                        OnClick(resultBitmap)
                                     }
 
                                 }
@@ -431,13 +428,8 @@ class FilterActivity: AppCompatActivity() {
                                     lifecycleScope.launch{
                                         loadingStart(imageView)
                                         rotationBar.isEnabled = false
-                                        val resultBitmap = Resizer.resize(bitmap,filterBar.progress/100.toDouble(),filterBar.progress/100.toDouble())
-                                        imageView.setImageBitmap(resultBitmap)
-                                        loading.visibility = View.INVISIBLE
-                                        imageView.visibility = View.VISIBLE
-                                        rotationBar.isEnabled = true
-                                        declineButton.visibility = View.VISIBLE
-                                        acceptButton.visibility = View.VISIBLE
+                                        resultBitmap = Resizer.resize(bitmap,filterBar.progress/100.toDouble(),filterBar.progress/100.toDouble())
+                                        OnClick(resultBitmap)
 
                                     }
                                 }
@@ -465,14 +457,9 @@ class FilterActivity: AppCompatActivity() {
                                     lifecycleScope.launch{
                                         loadingStart(imageView)
                                         filterBar.isEnabled = false
-                                        val saturatedBitmap =
+                                        resultBitmap =
                                             SaturationFilter.saturation(bitmap,(filterBar.progress/10.0).toFloat())
-                                        imageView.setImageBitmap(saturatedBitmap)
-                                        loading.visibility = View.INVISIBLE
-                                        imageView.visibility = View.VISIBLE
-                                        filterBar.isEnabled = true
-                                        declineButton.visibility = View.VISIBLE
-                                        acceptButton.visibility = View.VISIBLE
+                                        OnClick(resultBitmap)
 
                                     }
                                 }
@@ -501,17 +488,9 @@ class FilterActivity: AppCompatActivity() {
                                         loadingStart(imageView)
 
                                         filterBar.isEnabled = false
-                                        val resultBitmap =
+                                        resultBitmap =
                                             ColorFilters.brightness(bitmap, filterBar.progress)
-                                        imageView.setImageBitmap(resultBitmap)
-
-                                        loading.visibility = View.INVISIBLE
-                                        imageView.visibility = View.VISIBLE
-
-                                        filterBar.isEnabled = true
-
-                                        declineButton.visibility = View.VISIBLE
-                                        acceptButton.visibility = View.VISIBLE
+                                        OnClick(resultBitmap)
 
                                     }
                                 }
@@ -549,17 +528,9 @@ class FilterActivity: AppCompatActivity() {
                                         loadingStart(imageView)
 
                                         rotationBar.isEnabled = false
-                                        val resultBitmap =
+                                        resultBitmap =
                                             ColorFilters.contrast(bitmap, filterBar.progress)
-                                        imageView.setImageBitmap(resultBitmap)
-
-                                        loading.visibility = View.INVISIBLE
-                                        imageView.visibility = View.VISIBLE
-
-                                        rotationBar.isEnabled = true
-
-                                        declineButton.visibility = View.VISIBLE
-                                        acceptButton.visibility = View.VISIBLE
+                                        OnClick(resultBitmap)
 
                                     }
                                 }
@@ -573,26 +544,13 @@ class FilterActivity: AppCompatActivity() {
 
                         7->{
                             loadingStart(imageView)
-                            val resultBitmap =
+                            resultBitmap =
                                 ColorFilters.unsharpMasking(bitmap,5)
-                            imageView.setImageBitmap(resultBitmap)
-                            imageView.visibility = View.VISIBLE
-                            loading.visibility = View.INVISIBLE
-                            declineButton.visibility = View.VISIBLE
-                            acceptButton.visibility = View.VISIBLE
+                            OnClick(resultBitmap)
                         }
 
                         8->{
-                            val firstTriangleBtn = findViewById<ImageView>(R.id.firstTriangle)
-                            val firstTriangleInfo = findViewById<TextView>(R.id.firsTextInfo)
 
-                            val secondTriangleBtn = findViewById<ImageView>(R.id.secondTriangle)
-                            val secondTriangleInfo = findViewById<TextView>(R.id.secondTextInfo)
-
-                            val startBtn = findViewById<ImageView>(R.id.AffineStart)
-                            val startInfo = findViewById<TextView>(R.id.AffineTextInfo)
-
-                            var resultBitmap:Bitmap
                             firstTriangleBtn.visibility = View.VISIBLE
                             firstTriangleInfo.visibility = View.VISIBLE
                             firstTriangleInfo.setSelected(true)
@@ -607,19 +565,20 @@ class FilterActivity: AppCompatActivity() {
 
 
                             firstTriangleBtn.setOnClickListener{
-                                Affine.createFirstTriangle()
+                                imageView.setTouchable(imageView,bitmap)
+                                firstTriangleBtn.startAnimation(animation)
                             }
 
                             secondTriangleBtn.setOnClickListener{
                                 Affine.createSecondTriangle()
+                                secondTriangleBtn.startAnimation(animation)
                             }
 
                             startBtn.setOnClickListener{
                                 lifecycleScope.launch {
+                                    startBtn.startAnimation(animation)
                                     resultBitmap = Affine.callAffine(bitmap)
-                                    imageView.setImageBitmap(resultBitmap)
-                                    acceptButton.visibility = View.VISIBLE
-                                    declineButton.visibility = View.VISIBLE
+                                    OnClick(resultBitmap)
                                 }
                             }
                         }
