@@ -30,6 +30,8 @@ import com.example.photoeditor.Retouch.Companion.setRetouchable
 import kotlinx.coroutines.launch
 import java.net.HttpURLConnection
 import java.util.Stack
+import com.example.photoeditor.Affine.Companion
+import com.example.photoeditor.Affine.Companion.setTouchable
 
 
 data class ItemData(val image:Int, val title:String)
@@ -130,8 +132,6 @@ class FilterActivity: AppCompatActivity() {
             loading.visibility = View.VISIBLE
         }
 
-
-
         backButton.setOnClickListener {
             finish()
         }
@@ -163,15 +163,21 @@ class FilterActivity: AppCompatActivity() {
         }
 
         undoButton.setOnClickListener{
+            println(1)
             val uri = History.undo(undoStack,redoStack)
-            bitmap = History.loadImageFromUri(this,uri)
-            imageView.setImageBitmap(bitmap)
+            if(uri!=null) {
+                bitmap = History.loadImageFromUri(this, uri)
+                imageView.setImageBitmap(bitmap)
+            }
         }
 
         redoButton.setOnClickListener{
+            println(2)
             val uri = History.redo(undoStack,redoStack)
-            bitmap = History.loadImageFromUri(this,uri)
-            imageView.setImageBitmap(bitmap)
+            if(uri!=null) {
+                bitmap = History.loadImageFromUri(this, uri)
+                imageView.setImageBitmap(bitmap)
+            }
         }
 
         val itemList: List<ItemData> = listOf(
@@ -182,8 +188,8 @@ class FilterActivity: AppCompatActivity() {
             ItemData(R.drawable.filters_icon, "Фильтры"),
             ItemData(R.drawable.contrast, "Контраст"),
             ItemData(R.drawable.retouch, "Ретуширование"),
-            ItemData(R.drawable.sharpen,"Нерезкое маскирование")
-        )
+            ItemData(R.drawable.sharpen,"Нерезкое маскирование"),
+            ItemData(R.drawable.error,"Афинные преобразования"))
 
         recyclerView.addItemDecoration(SpacesItemDecoration(5))
         val adapter = CarouselAdapter(itemList, this)
@@ -418,8 +424,7 @@ class FilterActivity: AppCompatActivity() {
                                     lifecycleScope.launch{
                                         loadingStart(imageView)
                                         rotationBar.isEnabled = false
-                                        val resultBitmap =
-                                            Resize.callResize(bitmap,filterBar.progress/100.toDouble(),filterBar.progress/100.toDouble())
+                                        val resultBitmap = Resizer.resize(bitmap,filterBar.progress/100.toDouble(),filterBar.progress/100.toDouble())
                                         imageView.setImageBitmap(resultBitmap)
                                         loading.visibility = View.INVISIBLE
                                         imageView.visibility = View.VISIBLE
@@ -568,6 +573,44 @@ class FilterActivity: AppCompatActivity() {
                             loading.visibility = View.INVISIBLE
                             declineButton.visibility = View.VISIBLE
                             acceptButton.visibility = View.VISIBLE
+                        }
+
+                        8->{
+                            val firstTriangleBtn = findViewById<ImageView>(R.id.firstTriangle)
+                            val firstTriangleInfo = findViewById<TextView>(R.id.firsTextInfo)
+
+                            val secondTriangleBtn = findViewById<ImageView>(R.id.secondTriangle)
+                            val secondTriangleInfo = findViewById<TextView>(R.id.secondTextInfo)
+
+                            val startBtn = findViewById<ImageView>(R.id.AffineStart)
+                            val startInfo = findViewById<TextView>(R.id.AffineTextInfo)
+
+                            var resultBitmap:Bitmap
+                            firstTriangleBtn.visibility = View.VISIBLE
+                            firstTriangleInfo.visibility = View.VISIBLE
+
+                            secondTriangleBtn.visibility = View.VISIBLE
+                            secondTriangleInfo.visibility = View.VISIBLE
+
+                            startBtn.visibility = View.VISIBLE
+                            startInfo.visibility = View.VISIBLE
+                            imageView.setTouchable(imageView,bitmap)
+
+
+                            firstTriangleBtn.setOnClickListener{
+                                Affine.createFirstTriangle()
+                            }
+
+                            secondTriangleBtn.setOnClickListener{
+                                Affine.createSecondTriangle()
+                            }
+
+                            startBtn.setOnClickListener{
+                                resultBitmap = Affine.callAffine(bitmap)
+                                imageView.setImageBitmap(resultBitmap)
+                                acceptButton.visibility = View.VISIBLE
+                                declineButton.visibility = View.VISIBLE
+                            }
                         }
                     }
                 }

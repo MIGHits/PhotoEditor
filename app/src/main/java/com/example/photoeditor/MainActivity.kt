@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.example.photoeditor.Cube3d.CubeActivity
 import com.example.photoeditor.FilterActivity
 import com.example.photoeditor.R
 import java.io.File
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity()
         window.setNavigationBarColor(Color.parseColor("#5e6666"));
         val photoPickButton = findViewById<ImageButton>(R.id.galleryButton)
         val cameraButton =  findViewById<ImageButton>(R.id.cameraButton)
+        val cubeButton = findViewById<ImageButton>(R.id.cubeButton)
 
         cameraButton.setOnClickListener{
 
@@ -63,6 +65,12 @@ class MainActivity : AppCompatActivity()
             {
                 onGallery()
             }
+        }
+
+        cubeButton.setOnClickListener{
+            var intent:Intent
+            intent = Intent(this, CubeActivity::class.java)
+            startActivity(intent)
         }
     }
 

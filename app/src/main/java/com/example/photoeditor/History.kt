@@ -30,11 +30,12 @@ class History {
         }
 
         fun undo(undoStack:Stack<Uri>,redoStack:Stack<Uri>): Uri? {
-            return if (undoStack.isNotEmpty()) {
+            return if (undoStack.size>1) {
                 val uri = undoStack.pop()
                 redoStack.push(uri)
-                uri
+                undoStack.last()
             } else {
+                println("ошибка1")
                 null
             }
         }
@@ -45,6 +46,7 @@ class History {
                 undoStack.push(uri)
                 uri
             } else {
+                println("ошибка2")
                 null
             }
         }

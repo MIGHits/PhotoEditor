@@ -134,6 +134,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rotationBar" />
 
+
     <SeekBar
         android:id="@+id/rotationBar"
         android:layout_width="180dp"
@@ -144,11 +145,106 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/customer_image"
-        app:layout_constraintVertical_bias="0.149" />
+        app:layout_constraintVertical_bias="0.318" />
 
+    <ImageView
+        android:id="@+id/firstTriangle"
+        android:layout_width="45dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/item_background"
+        android:scaleType="fitCenter"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.218"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/customer_image"
+        />
+
+    <TextView
+        android:id="@+id/firsTextInfo"
+        android:layout_width="45dp"
+        android:text="Первый треугольник"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:visibility="invisible"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/firstTriangle"
+        app:layout_constraintStart_toStartOf="@+id/firstTriangle"
+        app:layout_constraintTop_toBottomOf="@+id/firstTriangle" />
+
+    <TextView
+        android:id="@+id/secondTextInfo"
+        android:layout_width="45dp"
+        android:text="Второй треугольник"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:visibility="invisible"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/secondTriangle"
+        app:layout_constraintStart_toStartOf="@+id/secondTriangle"
+        app:layout_constraintTop_toBottomOf="@+id/secondTriangle" />
+
+
+    <ImageView
+        android:id="@+id/secondTriangle"
+        android:layout_width="45dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:visibility="invisible"
+        android:background="@drawable/item_background"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.778"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/customer_image" />
+
+    <TextView
+        android:id="@+id/AffineTextInfo"
+        android:layout_width="45dp"
+        android:text="Старт"
+        android:visibility="invisible"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="@+id/AffineStart"
+        app:layout_constraintStart_toStartOf="@+id/AffineStart"
+        app:layout_constraintTop_toBottomOf="@+id/AffineStart" />
+
+
+    <ImageView
+        android:id="@+id/AffineStart"
+        android:layout_width="45dp"
+        android:layout_height="60dp"
+        android:visibility="invisible"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/item_background"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toStartOf="@+id/secondTriangle"
+        app:layout_constraintHorizontal_bias="0.504"
+        app:layout_constraintStart_toEndOf="@+id/firstTriangle"
+        app:layout_constraintTop_toBottomOf="@+id/customer_image" />
 
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/loading_animation"
