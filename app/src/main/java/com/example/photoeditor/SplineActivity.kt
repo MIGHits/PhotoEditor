@@ -1,22 +1,29 @@
 package com.example.photoeditor
 
 import android.content.ContentValues
-import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.PointF
 import android.net.Uri
+import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.ImageButton
 import android.widget.Toast
-import kotlinx.coroutines.*
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.math.ceil
 
 var isRemovingEnabled = false
 var isMovingEnabled = false
@@ -112,8 +119,14 @@ class SplineActivity : AppCompatActivity() {
 
     private fun saveImageToMediaStore(bitmap: Bitmap) {
         val contentResolver = contentResolver
+        val currentDate = Date()
+        val dateFormat: DateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val dateText = dateFormat.format(currentDate)
+        val timeFormat: DateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        val timeText = timeFormat.format(currentDate)
+
         val values = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, "spline.jpg")
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "spline-$dateText-$timeText.jpg")
             put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
             put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
         }
@@ -139,56 +152,65 @@ class SplineActivity : AppCompatActivity() {
         val width = source.width
         val height = source.height
         val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val pixels = IntArray(width * height)
+        val resultPixels = IntArray(width * height)
+        source.getPixels(pixels, 0, width, 0, 0, width, height)
 
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                val neighbours = mutableListOf<PointF>()
-                if ((x - 1) > 0 && (y - 1) > 0) {
-                    neighbours.add(PointF((x - 1).toFloat(), (y - 1).toFloat()))
-                }
-                if ((y - 1) > 0) {
-                    neighbours.add(PointF(x.toFloat(), (y - 1).toFloat()))
-                }
-                if ((x + 1) < width && (y - 1) > 0) {
-                    neighbours.add(PointF((x + 1).toFloat(), (y - 1).toFloat()))
-                }
-                if ((x - 1) > 0) {
-                    neighbours.add(PointF((x - 1).toFloat(), y.toFloat()))
-                }
-                if ((x + 1) < width) {
-                    neighbours.add(PointF((x + 1).toFloat(), y.toFloat()))
-                }
-                if ((x - 1) > 0 && (y + 1) < height) {
-                    neighbours.add(PointF((x - 1).toFloat(), (y + 1).toFloat()))
-                }
-                if ((y + 1) < height) {
-                    neighbours.add(PointF(x.toFloat(), (y + 1).toFloat()))
-                }
-                if ((x + 1) < width && (y + 1) < height) {
-                    neighbours.add(PointF((x + 1).toFloat(), (y + 1).toFloat()))
-                }
+        val numCores = Runtime.getRuntime().availableProcessors()
+        val chunkSize = ceil(height.toDouble() / numCores).toInt()
 
-                var red = 0
-                var green = 0
-                var blue = 0
-                for (point in neighbours) {
-                    val pixel = source.getPixel(point.x.toInt(), point.y.toInt())
-                    red += Color.red(pixel)
-                    green += Color.green(pixel)
-                    blue += Color.blue(pixel)
+        val deferredResults = (0 until numCores).map { core ->
+            async {
+                val startY = core * chunkSize
+                val endY = minOf(startY + chunkSize, height)
+                for (y in startY until endY) {
+                    for (x in 0 until width) {
+                        val neighbours = getNeighbours(pixels, x, y, width, height)
+                        var count = 0
+                        for (pixel in neighbours) {
+                            if (Color.red(pixel) != 221 && Color.green(pixel) != 221 &&
+                                Color.blue(pixel) != 221) count++
+                        }
+                        if (count == 0) {
+                            resultPixels[y * width + x] = pixels[y * width + x]
+                            continue
+                        }
+                        val (r, g, b) = getAverageColor(neighbours)
+                        resultPixels[y * width + x] = Color.rgb(r, g, b)
+                    }
                 }
-                red /= neighbours.size
-                green /= neighbours.size
-                blue /= neighbours.size
-                val newPixel = Color.rgb(
-                    red.coerceIn(0, 255),
-                    green.coerceIn(0, 255),
-                    blue.coerceIn(0, 255)
-                )
-                resultBitmap.setPixel(x, y, newPixel)
             }
         }
 
+        deferredResults.forEach { it.await() }
+
+        resultBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
         resultBitmap
+    }
+
+    private fun getNeighbours(pixels: IntArray, x: Int, y: Int, width: Int, height: Int): List<Int> {
+        val neighbors = mutableListOf<Int>()
+
+        for (j in (y - 1)..(y + 1)) {
+            for (i in (x - 1)..(x + 1)) {
+                if (i in 0 until width && j in 0 until height) {
+                    neighbors.add(pixels[j * width + i])
+                }
+            }
+        }
+        return neighbors
+    }
+
+    private fun getAverageColor(pixels: List<Int>): Triple<Int, Int, Int> {
+        var red = 0
+        var green = 0
+        var blue = 0
+        for (pixel in pixels) {
+            red += Color.red(pixel)
+            green += Color.green(pixel)
+            blue += Color.blue(pixel)
+        }
+
+        return Triple(red / pixels.size, green / pixels.size, blue / pixels.size)
     }
 }

@@ -29,6 +29,10 @@ import com.airbnb.lottie.LottieAnimationView
 import com.example.photoeditor.Affine.Companion.setTouchable
 import com.example.photoeditor.Retouch.Companion.setRetouchable
 import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.Stack
 
 
@@ -98,10 +102,15 @@ class FilterActivity: AppCompatActivity() {
 
 
         fun saveImageToMediaStore(bitmap: Bitmap) {
-
             val contentResolver = contentResolver
+            val currentDate = Date()
+            val dateFormat: DateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+            val dateText = dateFormat.format(currentDate)
+            val timeFormat: DateFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+            val timeText = timeFormat.format(currentDate)
+
             val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, "filtered_image.jpg")
+                put(MediaStore.MediaColumns.DISPLAY_NAME, "filtered_image-$dateText-$timeText.jpg")
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                 put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
             }
