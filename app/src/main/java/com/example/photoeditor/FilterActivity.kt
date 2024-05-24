@@ -83,6 +83,51 @@ class FilterActivity: AppCompatActivity() {
         var drawable = imageView.drawable as BitmapDrawable
         var bitmap = drawable.bitmap
 
+        val itemList: List<ItemData> = listOf(
+            ItemData(R.drawable.rotation_icon, "Поворот"),
+            ItemData(R.drawable.scale_icon, "Масштаб"),
+            ItemData(R.drawable.saturation, "Насыщенность"),
+            ItemData(R.drawable.bright, "Яркость"),
+            ItemData(R.drawable.filters_icon, "Фильтры"),
+            ItemData(R.drawable.contrast, "Контраст"),
+            ItemData(R.drawable.retouch, "Ретуширование"),
+            ItemData(R.drawable.sharpen,"Нерезкое маскирование"),
+            ItemData(R.drawable.affine,"Афинные преобразования"))
+
+        recyclerView.addItemDecoration(SpacesItemDecoration(5))
+        val adapter = CarouselAdapter(itemList, this)
+        recyclerView.adapter = adapter
+
+        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.layoutManager = layoutManager
+        layoutManager.scrollToPositionWithOffset(0, resources.displayMetrics.widthPixels / 2)
+
+        val snapHelper = LinearSnapHelper()
+        snapHelper.attachToRecyclerView(recyclerView)
+
+        val effectsList: List<ItemData> = listOf(
+            ItemData(R.drawable.negativ_filter, "Негатив"),
+            ItemData(R.drawable.red_filter, "Красный"),
+            ItemData(R.drawable.green_filter, "Зеленый"),
+            ItemData(R.drawable.blue_filter, "Синий"),
+            ItemData(R.drawable.gray_scale, "Оттенки серого"),
+            ItemData(R.drawable.mosaic_filter, "Мозаика"),
+            ItemData(R.drawable.sepia_filter, "Сепия"),
+            ItemData(R.drawable.gausian,"Размытие")
+        )
+
+
+        effects.addItemDecoration(SpacesItemDecoration(5))
+        val effectsAdapter = EffectsMenuAdapter(effectsList, this)
+        effects.adapter = effectsAdapter
+
+        val effectsLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        effects.layoutManager = effectsLayoutManager
+        layoutManager.scrollToPositionWithOffset(0, resources.displayMetrics.widthPixels / 2)
+        val effectsSnapHelper = LinearSnapHelper()
+        effectsSnapHelper.attachToRecyclerView(effects)
+
+
         var photoUri: Uri? = null
         lifecycleScope.launch {
             val initUri = History.saveImageToCache(this@FilterActivity,bitmap)
@@ -163,6 +208,8 @@ class FilterActivity: AppCompatActivity() {
 
             startBtn.visibility = View.INVISIBLE
             startInfo.visibility = View.INVISIBLE
+
+            imageView.setOnTouchListener(null)
         }
 
         acceptButton.setOnClickListener {
@@ -182,8 +229,12 @@ class FilterActivity: AppCompatActivity() {
 
             startBtn.visibility = View.INVISIBLE
             startInfo.visibility = View.INVISIBLE
+            imageView.setOnTouchListener(null)
 
-            History.addImageToUndoStack(photoUri,undoStack,redoStack)
+            lifecycleScope.launch {
+                photoUri = History.saveImageToCache(this@FilterActivity, bitmap)
+                History.addImageToUndoStack(photoUri, undoStack, redoStack)
+            }
         }
 
         saveButton.setOnClickListener {
@@ -191,7 +242,6 @@ class FilterActivity: AppCompatActivity() {
         }
 
         undoButton.setOnClickListener{
-            println(1)
             val uri = History.undo(undoStack,redoStack)
             if(uri!=null) {
                 bitmap = History.loadImageFromUri(this, uri)
@@ -200,7 +250,6 @@ class FilterActivity: AppCompatActivity() {
         }
 
         redoButton.setOnClickListener{
-            println(2)
             val uri = History.redo(undoStack,redoStack)
             if(uri!=null) {
                 bitmap = History.loadImageFromUri(this, uri)
@@ -208,53 +257,9 @@ class FilterActivity: AppCompatActivity() {
             }
         }
 
-        val itemList: List<ItemData> = listOf(
-            ItemData(R.drawable.rotation_icon, "Поворот"),
-            ItemData(R.drawable.scale_icon, "Масштаб"),
-            ItemData(R.drawable.saturation, "Насыщенность"),
-            ItemData(R.drawable.bright, "Яркость"),
-            ItemData(R.drawable.filters_icon, "Фильтры"),
-            ItemData(R.drawable.contrast, "Контраст"),
-            ItemData(R.drawable.retouch, "Ретуширование"),
-            ItemData(R.drawable.sharpen,"Нерезкое маскирование"),
-            ItemData(R.drawable.affine,"Афинные преобразования"))
 
-        recyclerView.addItemDecoration(SpacesItemDecoration(5))
-        val adapter = CarouselAdapter(itemList, this)
-        recyclerView.adapter = adapter
-
-        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        recyclerView.layoutManager = layoutManager
-        layoutManager.scrollToPositionWithOffset(0, resources.displayMetrics.widthPixels / 2)
-
-        val snapHelper = LinearSnapHelper()
-        snapHelper.attachToRecyclerView(recyclerView)
-
-        val effectsList: List<ItemData> = listOf(
-            ItemData(R.drawable.negativ_filter, "Негатив"),
-            ItemData(R.drawable.red_filter, "Красный"),
-            ItemData(R.drawable.green_filter, "Зеленый"),
-            ItemData(R.drawable.blue_filter, "Синий"),
-            ItemData(R.drawable.gray_scale, "Оттенки серого"),
-            ItemData(R.drawable.mosaic_filter, "Мозаика"),
-            ItemData(R.drawable.sepia_filter, "Сепия"),
-            ItemData(R.drawable.gausian,"Размытие")
-        )
-
-
-        effects.addItemDecoration(SpacesItemDecoration(5))
-        val effectsAdapter = EffectsMenuAdapter(effectsList, this)
-        effects.adapter = effectsAdapter
-
-        val effectsLayoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        effects.layoutManager = effectsLayoutManager
-        layoutManager.scrollToPositionWithOffset(0, resources.displayMetrics.widthPixels / 2)
-        val effectsSnapHelper = LinearSnapHelper()
-        effectsSnapHelper.attachToRecyclerView(effects)
-
-        suspend fun  OnClick(funBitmap: Bitmap){
+        fun  OnClick(funBitmap: Bitmap){
             resultBitmap = funBitmap
-            photoUri = History.saveImageToCache(this@FilterActivity,resultBitmap)
             imageView.setImageBitmap(resultBitmap)
             loading.visibility = View.INVISIBLE
             imageView.visibility = View.VISIBLE
@@ -308,7 +313,9 @@ class FilterActivity: AppCompatActivity() {
 
                         5 -> {
                             filterBar.min = 1
-                            filterBar.max = 50
+                            filterBar.max = 100
+                            filterBar.progress = 1
+
                             barProgress.text = filterBar.progress.toString()
                             filterBar.visibility = View.VISIBLE
                             barProgress.visibility = View.VISIBLE
@@ -340,9 +347,11 @@ class FilterActivity: AppCompatActivity() {
                                 ColorFilters.sepia(bitmap)
                             OnClick(resultBitmap)
                         }
+
                         7->{
                             filterBar.min = 1
                             filterBar.max = 5
+
                             barProgress.text = filterBar.min.toString()
                             filterBar.visibility = View.VISIBLE
                             barProgress.visibility = View.VISIBLE
@@ -538,15 +547,60 @@ class FilterActivity: AppCompatActivity() {
                         }
 
                         6 -> {
+                            filterBar.min = 5
+                            filterBar.max = 100
+                            filterBar.progress = 50
 
-                            imageView.setRetouchable(80,1.0,imageView)
+                            barProgress.text = filterBar.progress.toString()
+                            filterBar.visibility = View.VISIBLE
+                            barProgress.visibility = View.VISIBLE
+
+                            imageView.setRetouchable(filterBar.progress,1.0,imageView,acceptButton,declineButton)
+
+                            filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                                    barProgress.text = (filterBar.progress).toString()
+                                }
+
+                                override fun onStartTrackingTouch(rotationBar: SeekBar) {}
+
+                                override fun onStopTrackingTouch(rotationBar: SeekBar) {
+
+                                    lifecycleScope.launch{
+
+                                        imageView.setRetouchable(filterBar.progress,1.0,imageView,acceptButton,declineButton)
+                                    }
+                                }
+                            })
                         }
 
                         7->{
-                            loadingStart(imageView)
-                            resultBitmap =
-                                ColorFilters.unsharpMasking(bitmap,5)
-                            OnClick(resultBitmap)
+                            filterBar.min = 1
+                            filterBar.max = 5
+                            filterBar.progress = 1
+
+                            barProgress.text = filterBar.min.toString()
+                            filterBar.visibility = View.VISIBLE
+                            barProgress.visibility = View.VISIBLE
+
+                            filterBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                                override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                                    barProgress.text = progress.toString()
+                                }
+
+                                override fun onStartTrackingTouch(filterBar: SeekBar) {}
+
+                                override fun onStopTrackingTouch(filterBar: SeekBar) {
+
+                                    lifecycleScope.launch{
+                                        loadingStart(imageView)
+                                        resultBitmap =
+                                            ColorFilters.unsharpMasking(bitmap,filterBar.progress)
+                                        OnClick(resultBitmap)
+
+                                    }
+                                }
+                            })
                         }
 
                         8->{

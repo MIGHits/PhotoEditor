@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.view.MotionEvent
+import android.view.View
+import android.widget.ImageButton
 import android.widget.ImageView
 import kotlinx.coroutines.*
 import kotlin.math.*
@@ -15,7 +17,7 @@ class Retouch {
     companion object {
 
         @SuppressLint("ClickableViewAccessibility", "SuspiciousIndentation")
-        fun ImageView.setRetouchable(brushRadius: Int, retouchCoeff: Double,imageView:ImageView) {
+        fun ImageView.setRetouchable(brushRadius: Int, retouchCoeff: Double,imageView:ImageView,accept:ImageButton,decline:ImageButton) {
             val drawable = drawable as? BitmapDrawable
             val bitmap = drawable!!.bitmap
             val mutableBitmap = bitmap!!.copy(Bitmap.Config.ARGB_8888, true)
@@ -25,15 +27,17 @@ class Retouch {
                     val y = (bitmap.height * (event.y) / imageView.height).toInt()
 
                     CoroutineScope(Dispatchers.Main).launch {
-                            val retouchedBitmap = RetouchFilter(
-                                mutableBitmap,
-                                brushRadius,
-                                x,
-                                y,
-                                retouchCoeff
-                            )
-                            setImageBitmap(retouchedBitmap)
-                        }
+                        val retouchedBitmap = RetouchFilter(
+                            mutableBitmap,
+                            brushRadius,
+                            x,
+                            y,
+                            retouchCoeff
+                        )
+                        setImageBitmap(retouchedBitmap)
+                        accept.visibility = View.VISIBLE
+                        decline.visibility = View.VISIBLE
+                    }
 
                 }
                 true
