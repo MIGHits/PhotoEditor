@@ -55,7 +55,6 @@ class Affine {
                 if (event.action == MotionEvent.ACTION_DOWN) {
                     val x = bitmap.width * (event.x) / imageView.width
                     val y = bitmap.height * (imageView.height - event.y) / imageView.height
-                    Log.d("P", "Point added")
                     addPoint(x, y)
                     true
                 } else {
@@ -74,7 +73,7 @@ class Affine {
             curTriangle = 2
         }
 
-        fun callAffine(bitmap: Bitmap): Bitmap {
+        suspend fun callAffine(bitmap: Bitmap): Bitmap {
             val newAffine = AffineTransform(affineTriangle)
             return newAffine.process(bitmap)
         }

@@ -3,7 +3,9 @@ package com.example.photoeditor.Cube3d
 import com.example.photoeditor.AffineTransform.AffineTransform
 import com.example.photoeditor.UsefulFuns.findMax3
 import com.example.photoeditor.UsefulFuns.findMin3
+import kotlinx.coroutines.async
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
@@ -19,6 +21,21 @@ fun isPointInTriangle(x:Int,y:Int, triangle: Tria3d):Boolean{
     val cSide = (c.x - x) * (a.y - c.y) - (a.x - c.x) * (c.y - y)
     return (aSide >= 0 && bSide >= 0 && cSide >= 0 ) || (aSide < 0 && bSide < 0 && cSide < 0)
 }
+//withContext(Dispatchers.Default) {
+//    val numCores = Runtime.getRuntime().availableProcessors()
+//    val chunkSize = ceil(mesh.tris.size.toDouble() / numCores).toInt()
+//
+//    val deferredResults = (0 until numCores).map { core ->
+//        async {
+//            val startTris = core * chunkSize
+//            val endTris = minOf(startTris + chunkSize, mesh.tris.size)
+//
+//
+//
+//        }
+//    }
+//    deferredResults.forEach { it.await() }
+//}
 fun findBox2D(tris: Tria3d, width:Int, height:Int):Box2D{
     val result = Box2D(
         vec3d(max(findMin3(tris.p[0].x,tris.p[1].x,tris.p[2].x),0.0f),
@@ -31,22 +48,8 @@ fun findBox2D(tris: Tria3d, width:Int, height:Int):Box2D{
 }
 fun drawTriangle(pixels:IntArray, triangle: Tria3d, imgWidth:Int,imgHeight: Int, texture:IntArray, texWidth:Int){
 
-    //val aff = AffineTransform(triangle)
-    //val box = findBox2D(triangle, 2000, 2000)
-    //var oldPos:Array<Float>
     texturedTriangle(triangle,pixels,texture,imgWidth,imgHeight,texWidth)
-    //for(y in box.topLeft.y.toInt()..box.botRight.y.toInt()){
-    //    for(x in box.topLeft.x.toInt()..box.botRight.x.toInt()){
-//
-    //        if (isPointInTriangle(x,y,triangle) ){
-//
-    //            oldPos = aff.oldPos(x,y)
-    //
-    //            pixels[x + y*imgWidth] = texture[oldPos[0].toInt() + oldPos[1].toInt()*texWidth]
-//
-    //        }
-    //    }
-    //}
+
 }
 fun texturedTriangle(tris:Tria3d, image: IntArray, texture:IntArray, imgWidth:Int,imgHeight:Int, texWidth:Int){
     var x1 = tris.p[0].x.toInt()

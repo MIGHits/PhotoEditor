@@ -2,6 +2,7 @@ package com.example.photoeditor
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Color.alpha
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -385,13 +386,16 @@ class ColorFilters {
                                 var green = 0.0
                                 var blue = 0.0
                                 var alpha = 0.0
-
+                                if (alpha(pixels[y * width + x]) == 0){
+                                    continue
+                                }
                                 for (kernelX in -radius..radius) {
                                     for (kernelY in -radius..radius) {
                                         val currentX = x + kernelX
                                         val currentY = y + kernelY
                                         if (currentX in 0 until width && currentY in 0 until height) {
                                             val pixel = pixels[currentY * width + currentX]
+
                                             val kernelValue = kernel[kernelX + radius][kernelY + radius]
 
                                             red += (Color.red(pixel) * kernelValue)

@@ -11,6 +11,10 @@ import com.example.photoeditor.UsefulFuns.createColor
 import com.example.photoeditor.UsefulFuns.multiply4x4MatVec
 import com.example.photoeditor.UsefulFuns.normilazeVec
 import com.example.photoeditor.vec2d
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
@@ -53,7 +57,6 @@ class Scene3D {
         for(i in 0..<obj.size){
             mesh.tris[i] = applyTransformMatrixToTria(obj[i],midCorrection)
         }
-        //obj = applyTransformMatrixToTria(mesh.tris[i],midCorrection)
 
     }
     fun createRotationMatrix(axis:Char,angle:Float){
@@ -79,7 +82,7 @@ class Scene3D {
 
         }
     }
-    fun drawMesh(image: Bitmap,texture: IntArray,texWidth:Int){
+     fun drawMesh(image: Bitmap,texture: IntArray,texWidth:Int){
 
         val pixels = IntArray(image.width*image.height)
         image.getPixels(pixels,0,image.width,0,0,image.width,image.height)
@@ -91,18 +94,13 @@ class Scene3D {
         var line1:vec3d
         var line2:vec3d
         var normal:vec3d
+
         for (i in 0..<mesh.tris.size){
 
-            //mesh.tris[i] = applyTransformMatrixToTria(mesh.tris[i],midCorrection)
             mesh.tris[i] = applyTransformMatrixToTria(mesh.tris[i],matZRot)
             mesh.tris[i] = applyTransformMatrixToTria(mesh.tris[i],matYRot)
             mesh.tris[i] = applyTransformMatrixToTria(mesh.tris[i],matXRot)
             newTriaRotatedX = applyTransformMatrixToTria(mesh.tris[i],identityMatrix)
-            //newMiddled = applyTransformMatrixToTria(mesh.tris[i],midCorrection)
-//
-            //newTriaRotatedY = applyTransformMatrixToTria(newMiddled,matYRot)
-//
-            //newTriaRotatedX = applyTransformMatrixToTria(newTriaRotatedY,matXRot)
 
             newTriaRotatedX.p[0].z += 2.5f
             newTriaRotatedX.p[1].z += 2.5f

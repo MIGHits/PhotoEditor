@@ -606,10 +606,13 @@ class FilterActivity: AppCompatActivity() {
                             }
 
                             startBtn.setOnClickListener{
-                                resultBitmap = Affine.callAffine(bitmap)
-                                imageView.setImageBitmap(resultBitmap)
-                                acceptButton.visibility = View.VISIBLE
-                                declineButton.visibility = View.VISIBLE
+                                lifecycleScope.launch {
+                                    resultBitmap = Affine.callAffine(bitmap)
+                                    imageView.setImageBitmap(resultBitmap)
+                                    acceptButton.visibility = View.VISIBLE
+                                    declineButton.visibility = View.VISIBLE
+                                }
+
                             }
                         }
                     }

@@ -6,14 +6,18 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
+import android.view.View
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.photoeditor.Affine
 import com.example.photoeditor.R
 import com.example.photoeditor.UsefulFuns.getBitmapFromAsset
 import com.example.photoeditor.vec2d
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.atan2
 
@@ -225,7 +229,9 @@ class CubeActivity : AppCompatActivity() {
     }
     fun startSimulation(){
         val changedBitmap = Bitmap.createBitmap(imageView.width, imageView.height, Bitmap.Config.ARGB_8888)
-        newScene.drawMesh(changedBitmap,texture,texWidth)
-        imageView.setImageBitmap(changedBitmap)
+        lifecycleScope.launch {
+            newScene.drawMesh(changedBitmap,texture,texWidth)
+            imageView.setImageBitmap(changedBitmap)
+        }
     }
 }
