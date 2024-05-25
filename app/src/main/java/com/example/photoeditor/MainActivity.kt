@@ -23,6 +23,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.example.photoeditor.Cube3d.CubeActivity
+import com.example.photoeditor.DetectingActivity
 import com.example.photoeditor.FilterActivity
 import com.example.photoeditor.R
 import com.example.photoeditor.SplineActivity
@@ -49,6 +50,7 @@ class MainActivity : AppCompatActivity()
         val cameraButton =  findViewById<ImageButton>(R.id.cameraButton)
         val cubeButton = findViewById<ImageButton>(R.id.cubeButton)
         val splineButton = findViewById<ImageButton>(R.id.splineButton)
+        val faceDetectButton = findViewById<ImageButton>(R.id.detectingFaces)
         cameraButton.setOnClickListener{
 
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -99,6 +101,11 @@ class MainActivity : AppCompatActivity()
             intent = Intent(this,SplineActivity::class.java)
             startActivity(intent)
         }
+
+        faceDetectButton.setOnClickListener{
+            intent = Intent(this,DetectingActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun onGallery()
@@ -114,18 +121,17 @@ class MainActivity : AppCompatActivity()
         values.put(MediaStore.Images.Media.TITLE, "New Picture")
         values.put(MediaStore.Images.Media.DESCRIPTION, "From the Camera")
 
-        //camera intent
+
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        // set filename
+
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         vFilename = "FOTO_" + timeStamp + ".jpg"
 
-        // set direcory folder
         val directory = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
         val file = File(directory, vFilename)
-        val image_uri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
+        val imageUri = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", file);
 
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri)
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
         startActivityForResult(cameraIntent, REQUEST_IMAGE_CAPTURE)
     }
 
@@ -163,9 +169,9 @@ class MainActivity : AppCompatActivity()
         var intent:Intent
 
         if (requestCode == REQUEST_CODE_IMAGE_PICK && resultCode == Activity.RESULT_OK) {
-             imageUri = data?.data
+            imageUri = data?.data
             if (imageUri != null) {
-                 intent = Intent(this, FilterActivity::class.java)
+                intent = Intent(this, FilterActivity::class.java)
                 intent.putExtra("imageUri", imageUri.toString())
                 startActivity(intent)
             }
