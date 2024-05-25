@@ -9,4 +9,5 @@
 * Change android -> kotlinOptions ```jvmTarget = "17"```
 * Open **build.gradle (Module :openCV)**
 * Change android -> compileOptions ```sourceCompatibility JavaVersion.VERSION_17``` and ```targetCompatibility JavaVersion.VERSION_17```
+* Change the path to your Android SDK location in **local.properties**
 * Sync the project
