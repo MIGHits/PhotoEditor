@@ -105,7 +105,7 @@ class CubeActivity : AppCompatActivity() {
     }
 
     fun initMesh() {
-        val textureBitmap = getBitmapFromAsset(this, "texture1.png")
+        val textureBitmap = getBitmapFromAsset(this, "texture.png")
         texture = IntArray(textureBitmap.width*textureBitmap.height)
         textureBitmap.getPixels(texture,0,textureBitmap.width,0,0,textureBitmap.width,textureBitmap.height)
         texWidth = textureBitmap.width
